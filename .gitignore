@@ -1,0 +1,14 @@
+# Binaries
+bin/
+migration
+worker
+
+# Configurations
+config.yaml
+
+# IDEs
+.idea/
+.vscode/
+
+# OS files
+.DS_Store

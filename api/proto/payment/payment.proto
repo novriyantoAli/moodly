@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package = "github.com/novriyantoAli/moodly/api/proto/payment";
+
+import "google/protobuf/timestamp.proto";
+
+// Payment status enum
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_PROCESSING = 2;
+  PAYMENT_STATUS_COMPLETED = 3;
+  PAYMENT_STATUS_FAILED = 4;
+  PAYMENT_STATUS_CANCELED = 5;
+}
+
+message Payment {
+  uint32 id = 1;
+  double amount = 2;
+  string currency = 3;
+  string description = 4;
+  PaymentStatus status = 5;
+  uint32 created_by = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  string payment_number = 9;
+  string bill_id = 10;
+  string method = 11;
+  string gateway_reference = 12;
+  google.protobuf.Timestamp paid_at = 13;
+}
+
+message CreatePaymentRequest {
+  string method = 1;
+  string bill_number = 2;
+}
+
+message UpdatePaymentRequest {
+  uint32 id = 1;
+  string description = 2;
+  PaymentStatus status = 3;
+}
+
+message GetPaymentRequest {
+  uint32 id = 1;
+}
+
+message ListPaymentsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  PaymentStatus status = 3;
+  string currency = 4;
+  string bill_id = 5;
+  string payment_number = 6;
+  string method = 7;
+}
+
+message ListPaymentsResponse {
+  repeated Payment payments = 1;
+  int64 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message PaymentResponse {
+  Payment data = 1;
+  string message = 2;
+}
+
+service PaymentService {
+  rpc CreatePayment(CreatePaymentRequest) returns (PaymentResponse);
+  rpc GetPayment(GetPaymentRequest) returns (PaymentResponse);
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+  rpc UpdatePayment(UpdatePaymentRequest) returns (PaymentResponse);
+}

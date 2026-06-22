@@ -1,0 +1,69 @@
+syntax = "proto3";
+
+package user;
+
+option go_package = "github.com/novriyantoAli/moodly/api/proto/user";
+
+import "google/protobuf/timestamp.proto";
+
+message User {
+  uint32 id = 1;
+  string email = 2;
+  string phone_number = 3;
+  string full_name = 4;
+  string level = 5;
+  bool is_active = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string full_name = 2;
+}
+
+message UpdateUserRequest {
+  uint32 id = 1;
+  string full_name = 2;
+  string level = 3;
+  bool is_active = 4;
+}
+
+message GetUserRequest {
+  uint32 id = 1;
+}
+
+message GetUserByEmailRequest {
+  string email = 1;
+}
+
+message ListUsersRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+  string email = 3;
+}
+
+message ListUsersResponse {
+  repeated User users = 1;
+  int64 total_count = 2;
+  int32 page = 3;
+  int32 page_size = 4;
+}
+
+message DeleteUserRequest {
+  uint32 id = 1;
+}
+
+message UserResponse {
+  User data = 1;
+  string message = 2;
+}
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (UserResponse);
+  rpc GetUser(GetUserRequest) returns (UserResponse);
+  rpc GetUserByEmail(GetUserByEmailRequest) returns (UserResponse);
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  rpc UpdateUser(UpdateUserRequest) returns (UserResponse);
+  rpc DeleteUser(DeleteUserRequest) returns (UserResponse);
+}

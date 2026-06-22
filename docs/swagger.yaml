@@ -1,0 +1,2011 @@
+basePath: /api/v1
+definitions:
+  dto.BillListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.BillResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  dto.BillResponse:
+    properties:
+      amount:
+        type: integer
+      bill_month:
+        type: integer
+      bill_number:
+        type: string
+      bill_year:
+        type: integer
+      created_at:
+        type: string
+      due_date:
+        type: string
+      id:
+        type: string
+      paid_at:
+        type: string
+      payments:
+        items:
+          $ref: '#/definitions/dto.PaymentResponse'
+        type: array
+      status:
+        type: string
+      subscribe:
+        $ref: '#/definitions/dto.SubscribeResponse'
+      subscribe_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  dto.ChangePasswordRequest:
+    properties:
+      confirmPassword:
+        type: string
+      currentPassword:
+        type: string
+      newPassword:
+        type: string
+      userID:
+        type: integer
+    type: object
+  dto.CreateBillRequest:
+    properties:
+      amount:
+        type: integer
+      bill_month:
+        maximum: 12
+        minimum: 1
+        type: integer
+      bill_year:
+        minimum: 2020
+        type: integer
+      due_date:
+        type: string
+      status:
+        enum:
+        - unpaid
+        - paid
+        - overdue
+        type: string
+      subscribe_id:
+        type: integer
+    required:
+    - amount
+    - bill_month
+    - bill_year
+    - due_date
+    - subscribe_id
+    type: object
+  dto.CreatePaymentRequest:
+    properties:
+      bill_number:
+        type: string
+      method:
+        enum:
+        - cash
+        - transfer
+        - qris
+        - credit_card
+        - virtual_account
+        type: string
+    required:
+    - bill_number
+    - method
+    type: object
+  dto.CreateScanRequest:
+    properties:
+      barcode:
+        type: string
+      device:
+        $ref: '#/definitions/dto.DeviceInfo'
+      photo:
+        type: string
+      photo_size:
+        type: string
+      pin:
+        type: string
+      timestamp:
+        type: integer
+      transaction_id:
+        type: string
+    required:
+    - barcode
+    - device
+    - photo
+    - photo_size
+    - pin
+    - timestamp
+    - transaction_id
+    type: object
+  dto.CreateSubscriberRequest:
+    properties:
+      call_name:
+        type: string
+      password:
+        type: string
+      plan:
+        enum:
+        - pppoe
+        - hotspot
+        type: string
+      price:
+        type: number
+      start_date:
+        type: string
+      username:
+        type: string
+    required:
+    - call_name
+    - password
+    - plan
+    - price
+    - start_date
+    - username
+    type: object
+  dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - full_name
+    - password
+    type: object
+  dto.DeviceInfo:
+    properties:
+      browser:
+        type: string
+      device_type:
+        type: string
+      language:
+        type: string
+      platform:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  dto.LoginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  dto.OAuthAuthorizationRequest:
+    properties:
+      code:
+        type: string
+      provider:
+        $ref: '#/definitions/dto.OAuthProvider'
+      state:
+        type: string
+    required:
+    - code
+    - provider
+    - state
+    type: object
+  dto.OAuthAuthorizationURLRequest:
+    properties:
+      provider:
+        $ref: '#/definitions/dto.OAuthProvider'
+      redirect_uri:
+        type: string
+    required:
+    - provider
+    - redirect_uri
+    type: object
+  dto.OAuthAuthorizationURLResponse:
+    properties:
+      authorization_url:
+        type: string
+      state:
+        type: string
+    type: object
+  dto.OAuthProvider:
+    enum:
+    - google
+    - github
+    - gitlab
+    - microsoft
+    type: string
+    x-enum-varnames:
+    - GoogleProvider
+    - GithubProvider
+    - GitlabProvider
+    - MicrosoftProvider
+  dto.OAuthTokenRequest:
+    properties:
+      code:
+        type: string
+      provider:
+        $ref: '#/definitions/dto.OAuthProvider'
+    required:
+    - code
+    - provider
+    type: object
+  dto.OAuthTokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      id_token:
+        type: string
+      refresh_token:
+        type: string
+      token_type:
+        type: string
+    type: object
+  dto.OAuthUserInfo:
+    properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      provider:
+        type: string
+    type: object
+  dto.PaymentListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.PaymentResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  dto.PaymentResponse:
+    properties:
+      amount:
+        type: integer
+      bill_id:
+        type: string
+      created_at:
+        type: string
+      created_by:
+        type: integer
+      currency:
+        type: string
+      description:
+        type: string
+      gateway_reference:
+        type: string
+      id:
+        type: integer
+      method:
+        type: string
+      paid_at:
+        type: string
+      payment_number:
+        type: string
+      status:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.ScanListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.ScanResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  dto.ScanResponse:
+    properties:
+      barcode:
+        type: string
+      created_at:
+        type: string
+      device:
+        $ref: '#/definitions/dto.DeviceInfo'
+      id:
+        type: integer
+      photo:
+        type: string
+      photo_size:
+        type: string
+      pin:
+        type: string
+      status:
+        type: string
+      timestamp:
+        type: integer
+      transaction_id:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  dto.SetPINRequest:
+    properties:
+      pin:
+        maxLength: 6
+        minLength: 4
+        type: string
+      user_id:
+        type: integer
+    required:
+    - pin
+    - user_id
+    type: object
+  dto.SetPasswordRequest:
+    properties:
+      password:
+        type: string
+      userID:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.SubscribeResponse:
+    properties:
+      callname:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      plan:
+        type: string
+      price:
+        type: number
+      startdate:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.SubscriberListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.SubscriberResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  dto.SubscriberResponse:
+    properties:
+      call_name:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      plan:
+        type: string
+      price:
+        type: number
+      start_date:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
+  dto.UpdatePaymentRequest:
+    properties:
+      description:
+        type: string
+      status:
+        enum:
+        - pending
+        - completed
+        - failed
+        - canceled
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateScanRequest:
+    properties:
+      status:
+        enum:
+        - pending
+        - completed
+        - failed
+        type: string
+    required:
+    - status
+    type: object
+  dto.UpdateSubscriberRequest:
+    properties:
+      call_name:
+        type: string
+      is_active:
+        type: boolean
+      password:
+        type: string
+      plan:
+        enum:
+        - pppoe
+        - hotspot
+        type: string
+      price:
+        type: number
+      start_date:
+        type: string
+    type: object
+  dto.UpdateUserRequest:
+    properties:
+      full_name:
+        type: string
+      is_active:
+        type: boolean
+      level:
+        enum:
+        - user
+        - agent
+        - admin
+        type: string
+    type: object
+  dto.UserListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dto.UserResponse'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+    type: object
+  dto.UserPINResponse:
+    properties:
+      failed_attempt:
+        type: integer
+      is_locked:
+        type: boolean
+      user_id:
+        type: integer
+    type: object
+  dto.UserPasswordResponse:
+    properties:
+      failedAttempt:
+        type: integer
+      isLocked:
+        type: boolean
+      userID:
+        type: integer
+      username:
+        type: string
+    type: object
+  dto.UserResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      full_name:
+        type: string
+      id:
+        type: integer
+      is_active:
+        type: boolean
+      level:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  dto.VerifyPINRequest:
+    properties:
+      pin:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - pin
+    - user_id
+    type: object
+  dto.VerifyPasswordRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: |-
+    A production-ready Go boilerplate following Domain-Driven Design (DDD)
+    principles with NestJS-like architecture patterns.
+    Built with modern Go practices, microservice architecture, and
+    comprehensive background job processing.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Vibe DDD Golang API
+  version: "1.0"
+paths:
+  /api/v1/scans:
+    get:
+      consumes:
+      - application/json
+      description: List scans with pagination and filtering
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      - description: Scan status (pending, completed, failed)
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of scans
+          schema:
+            $ref: '#/definitions/dto.ScanListResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all scans
+      tags:
+      - Scans
+    post:
+      consumes:
+      - application/json
+      description: Submit a barcode scan with device information
+      parameters:
+      - description: Scan request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateScanRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Scan created successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new scan
+      tags:
+      - Scans
+  /api/v1/scans/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a scan by ID
+      parameters:
+      - description: Scan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Scan deleted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Scan not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a scan
+      tags:
+      - Scans
+    get:
+      consumes:
+      - application/json
+      description: Retrieve scan details by ID
+      parameters:
+      - description: Scan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Scan details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Scan not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a scan by ID
+      tags:
+      - Scans
+    put:
+      consumes:
+      - application/json
+      description: Update the status of a scan (pending, completed, failed)
+      parameters:
+      - description: Scan ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Status update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateScanRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Scan status updated
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Scan not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update scan status
+      tags:
+      - Scans
+  /api/v1/user-password:
+    get:
+      description: Get password security information
+      parameters:
+      - description: User ID
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserPasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get password info
+      tags:
+      - user-password
+    post:
+      consumes:
+      - application/json
+      description: Create or update user password
+      parameters:
+      - description: Set password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Set user password
+      tags:
+      - user-password
+  /api/v1/user-password/change:
+    put:
+      consumes:
+      - application/json
+      description: Change existing password
+      parameters:
+      - description: Change password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Change password
+      tags:
+      - user-password
+  /api/v1/user-password/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify username and password
+      parameters:
+      - description: Verify password request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Verify password
+      tags:
+      - user-password
+  /api/v1/user-security:
+    get:
+      description: Get user security information including lock status
+      parameters:
+      - description: User ID
+        in: query
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.UserPINResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user security info
+      tags:
+      - user-security
+  /api/v1/user-security/pin:
+    post:
+      consumes:
+      - application/json
+      description: Set or update PIN for user account
+      parameters:
+      - description: Set PIN request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SetPINRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Set PIN for user
+      tags:
+      - user-security
+  /api/v1/user-security/pin/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verify PIN for user account
+      parameters:
+      - description: Verify PIN request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.VerifyPINRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Verify PIN for user
+      tags:
+      - user-security
+  /api/v1/users/{user_id}/scans:
+    get:
+      consumes:
+      - application/json
+      description: List scans for a specific user with pagination
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Page size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of user scans
+          schema:
+            $ref: '#/definitions/dto.ScanListResponse'
+        "400":
+          description: Invalid ID
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user scans
+      tags:
+      - Scans
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate a user with email and password
+      parameters:
+      - description: Login credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful with user details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Invalid email or password
+          schema:
+            additionalProperties: true
+            type: object
+        "403":
+          description: User account is inactive
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: User login
+      tags:
+      - authentication
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Get the current authenticated user's details using JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Current user details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Missing or invalid token
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized - Invalid token
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      security:
+      - Bearer: []
+      summary: Get current user details
+      tags:
+      - users
+  /bills:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of bills with optional filtering and pagination
+      parameters:
+      - description: Filter by subscribe ID
+        in: query
+        name: subscribe_id
+        type: integer
+      - description: Filter by status (paid, unpaid, pending, overdue)
+        in: query
+        name: status
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of bills
+          schema:
+            $ref: '#/definitions/dto.BillListResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all bills
+      tags:
+      - bills
+    post:
+      consumes:
+      - application/json
+      description: Create a new bill with the provided information
+      parameters:
+      - description: Bill creation request
+        in: body
+        name: bill
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBillRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created bill
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new bill
+      tags:
+      - bills
+  /bills/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a single bill by its ID
+      parameters:
+      - description: Bill ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Bill details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid bill ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Bill not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a bill by ID
+      tags:
+      - bills
+  /bills/{id}/status:
+    put:
+      consumes:
+      - application/json
+      description: Update the status of a bill by ID
+      parameters:
+      - description: Bill ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 'Status update request (status: paid, unpaid, pending, overdue)'
+        in: body
+        name: request
+        required: true
+        schema:
+          additionalProperties:
+            type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Status updated successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Bill not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update bill status
+      tags:
+      - bills
+  /health:
+    get:
+      consumes:
+      - '*/*'
+      description: get the status of server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Show the status of server.
+      tags:
+      - health
+  /health/ready:
+    get:
+      consumes:
+      - '*/*'
+      description: get the readiness of server.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Show the readiness of server.
+      tags:
+      - health
+  /oauth/authenticate:
+    post:
+      consumes:
+      - application/json
+      description: Complete OAuth authentication flow - exchange code and get user
+        info
+      parameters:
+      - description: Authentication request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OAuthAuthorizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            $ref: '#/definitions/dto.OAuthUserInfo'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Authenticate with OAuth
+      tags:
+      - oauth
+  /oauth/authorization-url:
+    post:
+      consumes:
+      - application/json
+      description: Get the authorization URL for the specified OAuth provider
+      parameters:
+      - description: Authorization URL request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OAuthAuthorizationURLRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Authorization URL
+          schema:
+            $ref: '#/definitions/dto.OAuthAuthorizationURLResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get OAuth authorization URL
+      tags:
+      - oauth
+  /oauth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Refresh the access token using refresh token
+      parameters:
+      - description: Refresh token request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OAuthAuthorizationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: New access token
+          schema:
+            $ref: '#/definitions/dto.OAuthTokenResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Refresh access token
+      tags:
+      - oauth
+  /oauth/token:
+    post:
+      consumes:
+      - application/json
+      description: Exchange the authorization code from OAuth provider for access
+        token
+      parameters:
+      - description: Token exchange request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OAuthTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Access token
+          schema:
+            $ref: '#/definitions/dto.OAuthTokenResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Exchange authorization code for token
+      tags:
+      - oauth
+  /oauth/user-info:
+    get:
+      consumes:
+      - application/json
+      description: Get user information from OAuth provider using access token
+      parameters:
+      - description: OAuth provider (google, github, gitlab, microsoft)
+        in: query
+        name: provider
+        required: true
+        type: string
+      - description: Access token from OAuth provider
+        in: query
+        name: access_token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User information
+          schema:
+            $ref: '#/definitions/dto.OAuthUserInfo'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get OAuth user information
+      tags:
+      - oauth
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of payments with optional filtering and pagination
+      parameters:
+      - description: Filter by status
+        enum:
+        - pending
+        - completed
+        - failed
+        - canceled
+        in: query
+        name: status
+        type: string
+      - description: Filter by currency (3-letter code)
+        in: query
+        name: currency
+        type: string
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of payments
+          schema:
+            $ref: '#/definitions/dto.PaymentListResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all payments
+      tags:
+      - payments
+    post:
+      consumes:
+      - application/json
+      description: Create a new payment with the provided information
+      parameters:
+      - description: Payment creation request
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created payment
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new payment
+      tags:
+      - payments
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a single payment by its ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Payment details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid payment ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Payment not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a payment by ID
+      tags:
+      - payments
+    put:
+      consumes:
+      - application/json
+      description: Update a payment's information by ID
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Payment update request
+        in: body
+        name: payment
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePaymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated payment
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a payment
+      tags:
+      - payments
+  /subscribers:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of subscribers with optional filtering and pagination
+      parameters:
+      - description: Filter by username
+        in: query
+        name: username
+        type: string
+      - description: Filter by call name
+        in: query
+        name: call_name
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of subscribers
+          schema:
+            $ref: '#/definitions/dto.SubscriberListResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all subscribers
+      tags:
+      - subscribers
+    post:
+      consumes:
+      - application/json
+      description: Create a new subscriber with the provided information
+      parameters:
+      - description: Subscriber creation request
+        in: body
+        name: subscriber
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateSubscriberRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created subscriber
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Username already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new subscriber
+      tags:
+      - subscribers
+  /subscribers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a subscriber by ID
+      parameters:
+      - description: Subscriber ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subscriber deleted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid subscriber ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Subscriber not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a subscriber
+      tags:
+      - subscribers
+    get:
+      consumes:
+      - application/json
+      description: Get a single subscriber by their ID
+      parameters:
+      - description: Subscriber ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Subscriber details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid subscriber ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Subscriber not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a subscriber by ID
+      tags:
+      - subscribers
+    put:
+      consumes:
+      - application/json
+      description: Update a subscriber's information by ID
+      parameters:
+      - description: Subscriber ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Subscriber update request
+        in: body
+        name: subscriber
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSubscriberRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated subscriber
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Subscriber not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a subscriber
+      tags:
+      - subscribers
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of users with optional filtering and pagination
+      parameters:
+      - description: Filter by name
+        in: query
+        name: name
+        type: string
+      - description: Filter by email
+        in: query
+        name: email
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            $ref: '#/definitions/dto.UserListResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all users
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User creation request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Email already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new user
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      - application/json
+      description: |-
+        Delete a user by ID
+        Delete a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete a user
+      tags:
+      - users
+      - users
+    get:
+      consumes:
+      - application/json
+      description: Get a single user by their ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User details
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid user ID
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a user by ID
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Update a user's information by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: User update request
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated user
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: User not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Email already exists
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update a user
+      tags:
+      - users
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"
