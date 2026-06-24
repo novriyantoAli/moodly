@@ -12,7 +12,7 @@ const (
 )
 
 type Config struct {
-	Server   ServerConfig   `mapstructure:"api"`
+	Server   ServerConfig   `mapstructure:"server"`
 	Database DatabaseConfig `mapstructure:"database"`
 	Logger   LoggerConfig   `mapstructure:"logger"`
 	Redis    RedisConfig    `mapstructure:"redis"`
@@ -27,6 +27,9 @@ type ServerConfig struct {
 	ReadTimeout  time.Duration `mapstructure:"read_timeout"`
 	WriteTimeout time.Duration `mapstructure:"write_timeout"`
 	IdleTimeout  time.Duration `mapstructure:"idle_timeout"`
+	EnableTLS    bool          `mapstructure:"enable_tls"`
+	CertFile     string        `mapstructure:"cert_file"`
+	KeyFile      string        `mapstructure:"key_file"`
 }
 
 type DatabaseConfig struct {
@@ -77,11 +80,14 @@ func NewConfig() (*Config, error) {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("./config")
 
-	viper.SetDefault("api.host", "localhost")
-	viper.SetDefault("api.port", 8080)
-	viper.SetDefault("api.read_timeout", "10s")
-	viper.SetDefault("api.write_timeout", "10s")
-	viper.SetDefault("api.idle_timeout", "60s")
+	viper.SetDefault("server.host", "localhost")
+	viper.SetDefault("server.port", 8080)
+	viper.SetDefault("server.read_timeout", "10s")
+	viper.SetDefault("server.write_timeout", "10s")
+	viper.SetDefault("server.idle_timeout", "60s")
+	viper.SetDefault("server.enable_tls", false)
+	viper.SetDefault("server.cert_file", "")
+	viper.SetDefault("server.key_file", "")
 
 	viper.SetDefault("database.host", "localhost")
 	viper.SetDefault("database.port", 5432)

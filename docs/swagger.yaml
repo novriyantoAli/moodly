@@ -1,10 +1,10 @@
 basePath: /api/v1
 definitions:
-  dto.BillListResponse:
+  github_com_novriyantoAli_moodly_internal_application_bill_dto.BillListResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.BillResponse'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_bill_dto.BillResponse'
         type: array
       page:
         type: integer
@@ -13,7 +13,7 @@ definitions:
       total_count:
         type: integer
     type: object
-  dto.BillResponse:
+  github_com_novriyantoAli_moodly_internal_application_bill_dto.BillResponse:
     properties:
       amount:
         type: integer
@@ -33,29 +33,18 @@ definitions:
         type: string
       payments:
         items:
-          $ref: '#/definitions/dto.PaymentResponse'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentResponse'
         type: array
       status:
         type: string
       subscribe:
-        $ref: '#/definitions/dto.SubscribeResponse'
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscribeResponse'
       subscribe_id:
         type: integer
       updated_at:
         type: string
     type: object
-  dto.ChangePasswordRequest:
-    properties:
-      confirmPassword:
-        type: string
-      currentPassword:
-        type: string
-      newPassword:
-        type: string
-      userID:
-        type: integer
-    type: object
-  dto.CreateBillRequest:
+  github_com_novriyantoAli_moodly_internal_application_bill_dto.CreateBillRequest:
     properties:
       amount:
         type: integer
@@ -83,7 +72,190 @@ definitions:
     - due_date
     - subscribe_id
     type: object
-  dto.CreatePaymentRequest:
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationRequest:
+    properties:
+      status:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus'
+    required:
+    - status
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationResponse:
+    properties:
+      conversation_id:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus'
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.ConsultationResponse:
+    properties:
+      closed_at:
+        type: string
+      conversation_id:
+        type: string
+      created_at:
+        type: string
+      psychologist_id:
+        type: integer
+      started_at:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus'
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationRequest:
+    properties:
+      psychologist_id:
+        type: integer
+    required:
+    - psychologist_id
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationResponse:
+    properties:
+      conversation_id:
+        type: string
+      status:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus'
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.MarkMessageReadRequest:
+    properties:
+      message_id:
+        type: string
+    required:
+    - message_id
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse:
+    properties:
+      conversation_id:
+        type: string
+      created_at:
+        type: string
+      message:
+        type: string
+      message_id:
+        type: string
+      message_type:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType'
+      sender_id:
+        type: integer
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_dto.SendMessageRequest:
+    properties:
+      message:
+        type: string
+      message_type:
+        allOf:
+        - $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType'
+        enum:
+        - TEXT
+        - IMAGE
+        - FILE
+        - SYSTEM
+    required:
+    - message
+    - message_type
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus:
+    enum:
+    - WAITING
+    - ACTIVE
+    - CLOSED
+    - CANCELLED
+    type: string
+    x-enum-varnames:
+    - StatusWaiting
+    - StatusActive
+    - StatusClosed
+    - StatusCancelled
+  github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType:
+    enum:
+    - TEXT
+    - IMAGE
+    - FILE
+    - SYSTEM
+    type: string
+    x-enum-varnames:
+    - MessageTypeText
+    - MessageTypeImage
+    - MessageTypeFile
+    - MessageTypeSystem
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationRequest:
+    properties:
+      code:
+        type: string
+      provider:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider'
+      state:
+        type: string
+    required:
+    - code
+    - provider
+    - state
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLRequest:
+    properties:
+      provider:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider'
+      redirect_uri:
+        type: string
+    required:
+    - provider
+    - redirect_uri
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLResponse:
+    properties:
+      authorization_url:
+        type: string
+      state:
+        type: string
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider:
+    enum:
+    - google
+    - github
+    - gitlab
+    - microsoft
+    type: string
+    x-enum-varnames:
+    - GoogleProvider
+    - GithubProvider
+    - GitlabProvider
+    - MicrosoftProvider
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenRequest:
+    properties:
+      code:
+        type: string
+      provider:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider'
+    required:
+    - code
+    - provider
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      id_token:
+        type: string
+      refresh_token:
+        type: string
+      token_type:
+        type: string
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthUserInfo:
+    properties:
+      avatar_url:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      provider:
+        type: string
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_payment_dto.CreatePaymentRequest:
     properties:
       bill_number:
         type: string
@@ -99,177 +271,11 @@ definitions:
     - bill_number
     - method
     type: object
-  dto.CreateScanRequest:
-    properties:
-      barcode:
-        type: string
-      device:
-        $ref: '#/definitions/dto.DeviceInfo'
-      photo:
-        type: string
-      photo_size:
-        type: string
-      pin:
-        type: string
-      timestamp:
-        type: integer
-      transaction_id:
-        type: string
-    required:
-    - barcode
-    - device
-    - photo
-    - photo_size
-    - pin
-    - timestamp
-    - transaction_id
-    type: object
-  dto.CreateSubscriberRequest:
-    properties:
-      call_name:
-        type: string
-      password:
-        type: string
-      plan:
-        enum:
-        - pppoe
-        - hotspot
-        type: string
-      price:
-        type: number
-      start_date:
-        type: string
-      username:
-        type: string
-    required:
-    - call_name
-    - password
-    - plan
-    - price
-    - start_date
-    - username
-    type: object
-  dto.CreateUserRequest:
-    properties:
-      email:
-        type: string
-      full_name:
-        type: string
-      password:
-        minLength: 6
-        type: string
-    required:
-    - email
-    - full_name
-    - password
-    type: object
-  dto.DeviceInfo:
-    properties:
-      browser:
-        type: string
-      device_type:
-        type: string
-      language:
-        type: string
-      platform:
-        type: string
-      user_agent:
-        type: string
-    type: object
-  dto.LoginUserRequest:
-    properties:
-      email:
-        type: string
-      password:
-        minLength: 6
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  dto.OAuthAuthorizationRequest:
-    properties:
-      code:
-        type: string
-      provider:
-        $ref: '#/definitions/dto.OAuthProvider'
-      state:
-        type: string
-    required:
-    - code
-    - provider
-    - state
-    type: object
-  dto.OAuthAuthorizationURLRequest:
-    properties:
-      provider:
-        $ref: '#/definitions/dto.OAuthProvider'
-      redirect_uri:
-        type: string
-    required:
-    - provider
-    - redirect_uri
-    type: object
-  dto.OAuthAuthorizationURLResponse:
-    properties:
-      authorization_url:
-        type: string
-      state:
-        type: string
-    type: object
-  dto.OAuthProvider:
-    enum:
-    - google
-    - github
-    - gitlab
-    - microsoft
-    type: string
-    x-enum-varnames:
-    - GoogleProvider
-    - GithubProvider
-    - GitlabProvider
-    - MicrosoftProvider
-  dto.OAuthTokenRequest:
-    properties:
-      code:
-        type: string
-      provider:
-        $ref: '#/definitions/dto.OAuthProvider'
-    required:
-    - code
-    - provider
-    type: object
-  dto.OAuthTokenResponse:
-    properties:
-      access_token:
-        type: string
-      expires_in:
-        type: integer
-      id_token:
-        type: string
-      refresh_token:
-        type: string
-      token_type:
-        type: string
-    type: object
-  dto.OAuthUserInfo:
-    properties:
-      avatar_url:
-        type: string
-      email:
-        type: string
-      id:
-        type: string
-      name:
-        type: string
-      provider:
-        type: string
-    type: object
-  dto.PaymentListResponse:
+  github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentListResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.PaymentResponse'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentResponse'
         type: array
       page:
         type: integer
@@ -278,7 +284,7 @@ definitions:
       total_count:
         type: integer
     type: object
-  dto.PaymentResponse:
+  github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentResponse:
     properties:
       amount:
         type: integer
@@ -307,11 +313,63 @@ definitions:
       updated_at:
         type: string
     type: object
-  dto.ScanListResponse:
+  github_com_novriyantoAli_moodly_internal_application_payment_dto.UpdatePaymentRequest:
+    properties:
+      description:
+        type: string
+      status:
+        enum:
+        - pending
+        - completed
+        - failed
+        - canceled
+        type: string
+    required:
+    - status
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_scan_dto.CreateScanRequest:
+    properties:
+      barcode:
+        type: string
+      device:
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.DeviceInfo'
+      photo:
+        type: string
+      photo_size:
+        type: string
+      pin:
+        type: string
+      timestamp:
+        type: integer
+      transaction_id:
+        type: string
+    required:
+    - barcode
+    - device
+    - photo
+    - photo_size
+    - pin
+    - timestamp
+    - transaction_id
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_scan_dto.DeviceInfo:
+    properties:
+      browser:
+        type: string
+      device_type:
+        type: string
+      language:
+        type: string
+      platform:
+        type: string
+      user_agent:
+        type: string
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanListResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.ScanResponse'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanResponse'
         type: array
       page:
         type: integer
@@ -320,14 +378,14 @@ definitions:
       total_count:
         type: integer
     type: object
-  dto.ScanResponse:
+  github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanResponse:
     properties:
       barcode:
         type: string
       created_at:
         type: string
       device:
-        $ref: '#/definitions/dto.DeviceInfo'
+        $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.DeviceInfo'
       id:
         type: integer
       photo:
@@ -347,7 +405,29 @@ definitions:
       user_id:
         type: integer
     type: object
-  dto.SetPINRequest:
+  github_com_novriyantoAli_moodly_internal_application_scan_dto.UpdateScanRequest:
+    properties:
+      status:
+        enum:
+        - pending
+        - completed
+        - failed
+        type: string
+    required:
+    - status
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_security_dto.ChangePasswordRequest:
+    properties:
+      confirmPassword:
+        type: string
+      currentPassword:
+        type: string
+      newPassword:
+        type: string
+      userID:
+        type: integer
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_security_dto.SetPINRequest:
     properties:
       pin:
         maxLength: 6
@@ -359,7 +439,7 @@ definitions:
     - pin
     - user_id
     type: object
-  dto.SetPasswordRequest:
+  github_com_novriyantoAli_moodly_internal_application_security_dto.SetPasswordRequest:
     properties:
       password:
         type: string
@@ -368,7 +448,69 @@ definitions:
       username:
         type: string
     type: object
-  dto.SubscribeResponse:
+  github_com_novriyantoAli_moodly_internal_application_security_dto.UserPINResponse:
+    properties:
+      failed_attempt:
+        type: integer
+      is_locked:
+        type: boolean
+      user_id:
+        type: integer
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_security_dto.UserPasswordResponse:
+    properties:
+      failedAttempt:
+        type: integer
+      isLocked:
+        type: boolean
+      userID:
+        type: integer
+      username:
+        type: string
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPINRequest:
+    properties:
+      pin:
+        type: string
+      user_id:
+        type: integer
+    required:
+    - pin
+    - user_id
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPasswordRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_subscribe_dto.CreateSubscriberRequest:
+    properties:
+      call_name:
+        type: string
+      password:
+        type: string
+      plan:
+        enum:
+        - pppoe
+        - hotspot
+        type: string
+      price:
+        type: number
+      start_date:
+        type: string
+      username:
+        type: string
+    required:
+    - call_name
+    - password
+    - plan
+    - price
+    - start_date
+    - username
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscribeResponse:
     properties:
       callname:
         type: string
@@ -389,11 +531,11 @@ definitions:
       username:
         type: string
     type: object
-  dto.SubscriberListResponse:
+  github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberListResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.SubscriberResponse'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberResponse'
         type: array
       page:
         type: integer
@@ -402,7 +544,7 @@ definitions:
       total_count:
         type: integer
     type: object
-  dto.SubscriberResponse:
+  github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberResponse:
     properties:
       call_name:
         type: string
@@ -423,32 +565,7 @@ definitions:
       username:
         type: string
     type: object
-  dto.UpdatePaymentRequest:
-    properties:
-      description:
-        type: string
-      status:
-        enum:
-        - pending
-        - completed
-        - failed
-        - canceled
-        type: string
-    required:
-    - status
-    type: object
-  dto.UpdateScanRequest:
-    properties:
-      status:
-        enum:
-        - pending
-        - completed
-        - failed
-        type: string
-    required:
-    - status
-    type: object
-  dto.UpdateSubscriberRequest:
+  github_com_novriyantoAli_moodly_internal_application_subscribe_dto.UpdateSubscriberRequest:
     properties:
       call_name:
         type: string
@@ -466,7 +583,32 @@ definitions:
       start_date:
         type: string
     type: object
-  dto.UpdateUserRequest:
+  github_com_novriyantoAli_moodly_internal_application_user_dto.CreateUserRequest:
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - full_name
+    - password
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_user_dto.LoginUserRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_novriyantoAli_moodly_internal_application_user_dto.UpdateUserRequest:
     properties:
       full_name:
         type: string
@@ -479,11 +621,11 @@ definitions:
         - admin
         type: string
     type: object
-  dto.UserListResponse:
+  github_com_novriyantoAli_moodly_internal_application_user_dto.UserListResponse:
     properties:
       data:
         items:
-          $ref: '#/definitions/dto.UserResponse'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UserResponse'
         type: array
       page:
         type: integer
@@ -492,27 +634,7 @@ definitions:
       total_count:
         type: integer
     type: object
-  dto.UserPINResponse:
-    properties:
-      failed_attempt:
-        type: integer
-      is_locked:
-        type: boolean
-      user_id:
-        type: integer
-    type: object
-  dto.UserPasswordResponse:
-    properties:
-      failedAttempt:
-        type: integer
-      isLocked:
-        type: boolean
-      userID:
-        type: integer
-      username:
-        type: string
-    type: object
-  dto.UserResponse:
+  github_com_novriyantoAli_moodly_internal_application_user_dto.UserResponse:
     properties:
       created_at:
         type: string
@@ -527,23 +649,6 @@ definitions:
       level:
         type: string
       updated_at:
-        type: string
-    type: object
-  dto.VerifyPINRequest:
-    properties:
-      pin:
-        type: string
-      user_id:
-        type: integer
-    required:
-    - pin
-    - user_id
-    type: object
-  dto.VerifyPasswordRequest:
-    properties:
-      password:
-        type: string
-      username:
         type: string
     type: object
 externalDocs:
@@ -593,7 +698,7 @@ paths:
         "200":
           description: List of scans
           schema:
-            $ref: '#/definitions/dto.ScanListResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanListResponse'
         "400":
           description: Invalid query parameters
           schema:
@@ -617,7 +722,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateScanRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.CreateScanRequest'
       produces:
       - application/json
       responses:
@@ -732,7 +837,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateScanRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.UpdateScanRequest'
       produces:
       - application/json
       responses:
@@ -774,7 +879,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UserPasswordResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.UserPasswordResponse'
         "400":
           description: Bad Request
           schema:
@@ -798,7 +903,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.SetPasswordRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.SetPasswordRequest'
       produces:
       - application/json
       responses:
@@ -831,7 +936,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.ChangePasswordRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.ChangePasswordRequest'
       produces:
       - application/json
       responses:
@@ -864,7 +969,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.VerifyPasswordRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPasswordRequest'
       produces:
       - application/json
       responses:
@@ -901,7 +1006,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.UserPINResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.UserPINResponse'
         "400":
           description: Bad Request
           schema:
@@ -926,7 +1031,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.SetPINRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.SetPINRequest'
       produces:
       - application/json
       responses:
@@ -959,7 +1064,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.VerifyPINRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPINRequest'
       produces:
       - application/json
       responses:
@@ -1008,7 +1113,7 @@ paths:
         "200":
           description: List of user scans
           schema:
-            $ref: '#/definitions/dto.ScanListResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanListResponse'
         "400":
           description: Invalid ID
           schema:
@@ -1033,7 +1138,7 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/dto.LoginUserRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.LoginUserRequest'
       produces:
       - application/json
       responses:
@@ -1133,7 +1238,7 @@ paths:
         "200":
           description: List of bills
           schema:
-            $ref: '#/definitions/dto.BillListResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_bill_dto.BillListResponse'
         "400":
           description: Invalid query parameters
           schema:
@@ -1157,7 +1262,7 @@ paths:
         name: bill
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateBillRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_bill_dto.CreateBillRequest'
       produces:
       - application/json
       responses:
@@ -1256,6 +1361,276 @@ paths:
       summary: Update bill status
       tags:
       - bills
+  /consultations:
+    get:
+      consumes:
+      - application/json
+      description: Get all consultations for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of consultations
+          schema:
+            items:
+              $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.ConsultationResponse'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all consultations
+      tags:
+      - consultations
+    post:
+      consumes:
+      - application/json
+      description: Create a new consultation with a psychologist
+      parameters:
+      - description: Create consultation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created consultation
+          schema:
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new consultation
+      tags:
+      - consultations
+  /consultations/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a specific consultation by its ID
+      parameters:
+      - description: Consultation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Consultation details
+          schema:
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.ConsultationResponse'
+        "400":
+          description: Invalid ID format
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Consultation not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get consultation by ID
+      tags:
+      - consultations
+    patch:
+      consumes:
+      - application/json
+      description: Close an active consultation session
+      parameters:
+      - description: Consultation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Close consultation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Closed consultation details
+          schema:
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Close a consultation
+      tags:
+      - consultations
+  /consultations/{id}/messages:
+    get:
+      consumes:
+      - application/json
+      description: Get paginated messages for a specific consultation
+      parameters:
+      - description: Consultation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Pagination cursor (Message ID UUID)
+        in: query
+        name: cursor
+        type: string
+      - default: 20
+        description: Pagination limit
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of messages
+          schema:
+            items:
+              $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse'
+            type: array
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get messages
+      tags:
+      - consultations
+    post:
+      consumes:
+      - application/json
+      description: Send a message in a specific consultation
+      parameters:
+      - description: Consultation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Send message request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.SendMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created message
+          schema:
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Send a message
+      tags:
+      - consultations
+  /consultations/{id}/read:
+    post:
+      consumes:
+      - application/json
+      description: Mark a specific message as read by the user
+      parameters:
+      - description: Consultation ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Mark read request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MarkMessageReadRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated message details
+          schema:
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal server error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Mark a message as read
+      tags:
+      - consultations
   /health:
     get:
       consumes:
@@ -1300,14 +1675,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.OAuthAuthorizationRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: User information
           schema:
-            $ref: '#/definitions/dto.OAuthUserInfo'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthUserInfo'
         "400":
           description: Invalid request
           schema:
@@ -1332,14 +1707,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.OAuthAuthorizationURLRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Authorization URL
           schema:
-            $ref: '#/definitions/dto.OAuthAuthorizationURLResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLResponse'
         "400":
           description: Invalid request
           schema:
@@ -1364,14 +1739,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.OAuthAuthorizationRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationRequest'
       produces:
       - application/json
       responses:
         "200":
           description: New access token
           schema:
-            $ref: '#/definitions/dto.OAuthTokenResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenResponse'
         "400":
           description: Invalid request
           schema:
@@ -1397,14 +1772,14 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/dto.OAuthTokenRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Access token
           schema:
-            $ref: '#/definitions/dto.OAuthTokenResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenResponse'
         "400":
           description: Invalid request
           schema:
@@ -1440,7 +1815,7 @@ paths:
         "200":
           description: User information
           schema:
-            $ref: '#/definitions/dto.OAuthUserInfo'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthUserInfo'
         "400":
           description: Invalid request
           schema:
@@ -1493,7 +1868,7 @@ paths:
         "200":
           description: List of payments
           schema:
-            $ref: '#/definitions/dto.PaymentListResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentListResponse'
         "400":
           description: Invalid query parameters
           schema:
@@ -1517,7 +1892,7 @@ paths:
         name: payment
         required: true
         schema:
-          $ref: '#/definitions/dto.CreatePaymentRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.CreatePaymentRequest'
       produces:
       - application/json
       responses:
@@ -1586,7 +1961,7 @@ paths:
         name: payment
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdatePaymentRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.UpdatePaymentRequest'
       produces:
       - application/json
       responses:
@@ -1638,7 +2013,7 @@ paths:
         "200":
           description: List of subscribers
           schema:
-            $ref: '#/definitions/dto.SubscriberListResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberListResponse'
         "400":
           description: Invalid query parameters
           schema:
@@ -1662,7 +2037,7 @@ paths:
         name: subscriber
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateSubscriberRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.CreateSubscriberRequest'
       produces:
       - application/json
       responses:
@@ -1772,7 +2147,7 @@ paths:
         name: subscriber
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateSubscriberRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.UpdateSubscriberRequest'
       produces:
       - application/json
       responses:
@@ -1829,7 +2204,7 @@ paths:
         "200":
           description: List of users
           schema:
-            $ref: '#/definitions/dto.UserListResponse'
+            $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UserListResponse'
         "400":
           description: Invalid query parameters
           schema:
@@ -1853,7 +2228,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateUserRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.CreateUserRequest'
       produces:
       - application/json
       responses:
@@ -1973,7 +2348,7 @@ paths:
         name: user
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateUserRequest'
+          $ref: '#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UpdateUserRequest'
       produces:
       - application/json
       responses:
