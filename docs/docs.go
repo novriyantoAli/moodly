@@ -63,7 +63,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of scans",
                         "schema": {
-                            "$ref": "#/definitions/dto.ScanListResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanListResponse"
                         }
                     },
                     "400": {
@@ -101,7 +101,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateScanRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.CreateScanRequest"
                         }
                     }
                 ],
@@ -216,7 +216,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateScanRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.UpdateScanRequest"
                         }
                     }
                 ],
@@ -327,7 +327,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.UserPasswordResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.UserPasswordResponse"
                         }
                     },
                     "400": {
@@ -365,7 +365,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SetPasswordRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.SetPasswordRequest"
                         }
                     }
                 ],
@@ -414,7 +414,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.ChangePasswordRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.ChangePasswordRequest"
                         }
                     }
                 ],
@@ -463,7 +463,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.VerifyPasswordRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPasswordRequest"
                         }
                     }
                 ],
@@ -515,7 +515,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.UserPINResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.UserPINResponse"
                         }
                     },
                     "400": {
@@ -555,7 +555,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.SetPINRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.SetPINRequest"
                         }
                     }
                 ],
@@ -604,7 +604,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.VerifyPINRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPINRequest"
                         }
                     }
                 ],
@@ -673,7 +673,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of user scans",
                         "schema": {
-                            "$ref": "#/definitions/dto.ScanListResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanListResponse"
                         }
                     },
                     "400": {
@@ -713,7 +713,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.LoginUserRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.LoginUserRequest"
                         }
                     }
                 ],
@@ -858,7 +858,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of bills",
                         "schema": {
-                            "$ref": "#/definitions/dto.BillListResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_bill_dto.BillListResponse"
                         }
                     },
                     "400": {
@@ -896,7 +896,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateBillRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_bill_dto.CreateBillRequest"
                         }
                     }
                 ],
@@ -1038,6 +1038,403 @@ const docTemplate = `{
                 }
             }
         },
+        "/consultations": {
+            "get": {
+                "description": "Get all consultations for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Get all consultations",
+                "responses": {
+                    "200": {
+                        "description": "List of consultations",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.ConsultationResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new consultation with a psychologist",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Create a new consultation",
+                "parameters": [
+                    {
+                        "description": "Create consultation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created consultation",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/consultations/{id}": {
+            "get": {
+                "description": "Get details of a specific consultation by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Get consultation by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Consultation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Consultation details",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.ConsultationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Consultation not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Close an active consultation session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Close a consultation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Consultation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Close consultation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Closed consultation details",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/consultations/{id}/messages": {
+            "get": {
+                "description": "Get paginated messages for a specific consultation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Get messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Consultation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Pagination cursor (Message ID UUID)",
+                        "name": "cursor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Pagination limit",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of messages",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Send a message in a specific consultation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Send a message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Consultation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Send message request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.SendMessageRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created message",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/consultations/{id}/read": {
+            "post": {
+                "description": "Mark a specific message as read by the user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "consultations"
+                ],
+                "summary": "Mark a message as read",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Consultation ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Mark read request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MarkMessageReadRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated message details",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "get the status of server.",
@@ -1106,7 +1503,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthAuthorizationRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationRequest"
                         }
                     }
                 ],
@@ -1114,7 +1511,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User information",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthUserInfo"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthUserInfo"
                         }
                     },
                     "400": {
@@ -1154,7 +1551,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthAuthorizationURLRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLRequest"
                         }
                     }
                 ],
@@ -1162,7 +1559,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Authorization URL",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthAuthorizationURLResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLResponse"
                         }
                     },
                     "400": {
@@ -1202,7 +1599,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthAuthorizationRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationRequest"
                         }
                     }
                 ],
@@ -1210,7 +1607,7 @@ const docTemplate = `{
                     "200": {
                         "description": "New access token",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthTokenResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenResponse"
                         }
                     },
                     "400": {
@@ -1250,7 +1647,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthTokenRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenRequest"
                         }
                     }
                 ],
@@ -1258,7 +1655,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Access token",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthTokenResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenResponse"
                         }
                     },
                     "400": {
@@ -1311,7 +1708,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User information",
                         "schema": {
-                            "$ref": "#/definitions/dto.OAuthUserInfo"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthUserInfo"
                         }
                     },
                     "400": {
@@ -1388,7 +1785,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of payments",
                         "schema": {
-                            "$ref": "#/definitions/dto.PaymentListResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentListResponse"
                         }
                     },
                     "400": {
@@ -1426,7 +1823,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreatePaymentRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.CreatePaymentRequest"
                         }
                     }
                 ],
@@ -1527,7 +1924,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdatePaymentRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.UpdatePaymentRequest"
                         }
                     }
                 ],
@@ -1601,7 +1998,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of subscribers",
                         "schema": {
-                            "$ref": "#/definitions/dto.SubscriberListResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberListResponse"
                         }
                     },
                     "400": {
@@ -1639,7 +2036,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateSubscriberRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.CreateSubscriberRequest"
                         }
                     }
                 ],
@@ -1747,7 +2144,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateSubscriberRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.UpdateSubscriberRequest"
                         }
                     }
                 ],
@@ -1880,7 +2277,7 @@ const docTemplate = `{
                     "200": {
                         "description": "List of users",
                         "schema": {
-                            "$ref": "#/definitions/dto.UserListResponse"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UserListResponse"
                         }
                     },
                     "400": {
@@ -1918,7 +2315,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateUserRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.CreateUserRequest"
                         }
                     }
                 ],
@@ -2026,7 +2423,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateUserRequest"
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UpdateUserRequest"
                         }
                     }
                 ],
@@ -2133,13 +2530,13 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.BillListResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_bill_dto.BillListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.BillResponse"
+                        "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_bill_dto.BillResponse"
                     }
                 },
                 "page": {
@@ -2153,7 +2550,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.BillResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_bill_dto.BillResponse": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -2183,14 +2580,14 @@ const docTemplate = `{
                 "payments": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.PaymentResponse"
+                        "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentResponse"
                     }
                 },
                 "status": {
                     "type": "string"
                 },
                 "subscribe": {
-                    "$ref": "#/definitions/dto.SubscribeResponse"
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscribeResponse"
                 },
                 "subscribe_id": {
                     "type": "integer"
@@ -2200,24 +2597,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ChangePasswordRequest": {
-            "type": "object",
-            "properties": {
-                "confirmPassword": {
-                    "type": "string"
-                },
-                "currentPassword": {
-                    "type": "string"
-                },
-                "newPassword": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.CreateBillRequest": {
+        "github_com_novriyantoAli_moodly_internal_application_bill_dto.CreateBillRequest": {
             "type": "object",
             "required": [
                 "amount",
@@ -2255,7 +2635,278 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreatePaymentRequest": {
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.CloseConsultationResponse": {
+            "type": "object",
+            "properties": {
+                "conversation_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.ConsultationResponse": {
+            "type": "object",
+            "properties": {
+                "closed_at": {
+                    "type": "string"
+                },
+                "conversation_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "psychologist_id": {
+                    "type": "integer"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationRequest": {
+            "type": "object",
+            "required": [
+                "psychologist_id"
+            ],
+            "properties": {
+                "psychologist_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.CreateConsultationResponse": {
+            "type": "object",
+            "properties": {
+                "conversation_id": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.MarkMessageReadRequest": {
+            "type": "object",
+            "required": [
+                "message_id"
+            ],
+            "properties": {
+                "message_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.MessageResponse": {
+            "type": "object",
+            "properties": {
+                "conversation_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "message_id": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType"
+                },
+                "sender_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.SendMessageRequest": {
+            "type": "object",
+            "required": [
+                "message",
+                "message_type"
+            ],
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "message_type": {
+                    "enum": [
+                        "TEXT",
+                        "IMAGE",
+                        "FILE",
+                        "SYSTEM"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_entity.ConsultationStatus": {
+            "type": "string",
+            "enum": [
+                "WAITING",
+                "ACTIVE",
+                "CLOSED",
+                "CANCELLED"
+            ],
+            "x-enum-varnames": [
+                "StatusWaiting",
+                "StatusActive",
+                "StatusClosed",
+                "StatusCancelled"
+            ]
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType": {
+            "type": "string",
+            "enum": [
+                "TEXT",
+                "IMAGE",
+                "FILE",
+                "SYSTEM"
+            ],
+            "x-enum-varnames": [
+                "MessageTypeText",
+                "MessageTypeImage",
+                "MessageTypeFile",
+                "MessageTypeSystem"
+            ]
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "provider",
+                "state"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "provider": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLRequest": {
+            "type": "object",
+            "required": [
+                "provider",
+                "redirect_uri"
+            ],
+            "properties": {
+                "provider": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider"
+                },
+                "redirect_uri": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthAuthorizationURLResponse": {
+            "type": "object",
+            "properties": {
+                "authorization_url": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider": {
+            "type": "string",
+            "enum": [
+                "google",
+                "github",
+                "gitlab",
+                "microsoft"
+            ],
+            "x-enum-varnames": [
+                "GoogleProvider",
+                "GithubProvider",
+                "GitlabProvider",
+                "MicrosoftProvider"
+            ]
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "provider"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "provider": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthProvider"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthTokenResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_in": {
+                    "type": "integer"
+                },
+                "id_token": {
+                    "type": "string"
+                },
+                "refresh_token": {
+                    "type": "string"
+                },
+                "token_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_oauth_dto.OAuthUserInfo": {
+            "type": "object",
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_payment_dto.CreatePaymentRequest": {
             "type": "object",
             "required": [
                 "bill_number",
@@ -2277,254 +2928,13 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateScanRequest": {
-            "type": "object",
-            "required": [
-                "barcode",
-                "device",
-                "photo",
-                "photo_size",
-                "pin",
-                "timestamp",
-                "transaction_id"
-            ],
-            "properties": {
-                "barcode": {
-                    "type": "string"
-                },
-                "device": {
-                    "$ref": "#/definitions/dto.DeviceInfo"
-                },
-                "photo": {
-                    "type": "string"
-                },
-                "photo_size": {
-                    "type": "string"
-                },
-                "pin": {
-                    "type": "string"
-                },
-                "timestamp": {
-                    "type": "integer"
-                },
-                "transaction_id": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateSubscriberRequest": {
-            "type": "object",
-            "required": [
-                "call_name",
-                "password",
-                "plan",
-                "price",
-                "start_date",
-                "username"
-            ],
-            "properties": {
-                "call_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "plan": {
-                    "type": "string",
-                    "enum": [
-                        "pppoe",
-                        "hotspot"
-                    ]
-                },
-                "price": {
-                    "type": "number"
-                },
-                "start_date": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.CreateUserRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "full_name",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "full_name": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "dto.DeviceInfo": {
-            "type": "object",
-            "properties": {
-                "browser": {
-                    "type": "string"
-                },
-                "device_type": {
-                    "type": "string"
-                },
-                "language": {
-                    "type": "string"
-                },
-                "platform": {
-                    "type": "string"
-                },
-                "user_agent": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.LoginUserRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6
-                }
-            }
-        },
-        "dto.OAuthAuthorizationRequest": {
-            "type": "object",
-            "required": [
-                "code",
-                "provider",
-                "state"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "provider": {
-                    "$ref": "#/definitions/dto.OAuthProvider"
-                },
-                "state": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.OAuthAuthorizationURLRequest": {
-            "type": "object",
-            "required": [
-                "provider",
-                "redirect_uri"
-            ],
-            "properties": {
-                "provider": {
-                    "$ref": "#/definitions/dto.OAuthProvider"
-                },
-                "redirect_uri": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.OAuthAuthorizationURLResponse": {
-            "type": "object",
-            "properties": {
-                "authorization_url": {
-                    "type": "string"
-                },
-                "state": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.OAuthProvider": {
-            "type": "string",
-            "enum": [
-                "google",
-                "github",
-                "gitlab",
-                "microsoft"
-            ],
-            "x-enum-varnames": [
-                "GoogleProvider",
-                "GithubProvider",
-                "GitlabProvider",
-                "MicrosoftProvider"
-            ]
-        },
-        "dto.OAuthTokenRequest": {
-            "type": "object",
-            "required": [
-                "code",
-                "provider"
-            ],
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "provider": {
-                    "$ref": "#/definitions/dto.OAuthProvider"
-                }
-            }
-        },
-        "dto.OAuthTokenResponse": {
-            "type": "object",
-            "properties": {
-                "access_token": {
-                    "type": "string"
-                },
-                "expires_in": {
-                    "type": "integer"
-                },
-                "id_token": {
-                    "type": "string"
-                },
-                "refresh_token": {
-                    "type": "string"
-                },
-                "token_type": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.OAuthUserInfo": {
-            "type": "object",
-            "properties": {
-                "avatar_url": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "provider": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.PaymentListResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.PaymentResponse"
+                        "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentResponse"
                     }
                 },
                 "page": {
@@ -2538,7 +2948,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.PaymentResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_payment_dto.PaymentResponse": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -2582,13 +2992,88 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ScanListResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_payment_dto.UpdatePaymentRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "completed",
+                        "failed",
+                        "canceled"
+                    ]
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_scan_dto.CreateScanRequest": {
+            "type": "object",
+            "required": [
+                "barcode",
+                "device",
+                "photo",
+                "photo_size",
+                "pin",
+                "timestamp",
+                "transaction_id"
+            ],
+            "properties": {
+                "barcode": {
+                    "type": "string"
+                },
+                "device": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.DeviceInfo"
+                },
+                "photo": {
+                    "type": "string"
+                },
+                "photo_size": {
+                    "type": "string"
+                },
+                "pin": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "transaction_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_scan_dto.DeviceInfo": {
+            "type": "object",
+            "properties": {
+                "browser": {
+                    "type": "string"
+                },
+                "device_type": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "platform": {
+                    "type": "string"
+                },
+                "user_agent": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.ScanResponse"
+                        "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanResponse"
                     }
                 },
                 "page": {
@@ -2602,7 +3087,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.ScanResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_scan_dto.ScanResponse": {
             "type": "object",
             "properties": {
                 "barcode": {
@@ -2612,7 +3097,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "device": {
-                    "$ref": "#/definitions/dto.DeviceInfo"
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_scan_dto.DeviceInfo"
                 },
                 "id": {
                     "type": "integer"
@@ -2643,7 +3128,40 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SetPINRequest": {
+        "github_com_novriyantoAli_moodly_internal_application_scan_dto.UpdateScanRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "pending",
+                        "completed",
+                        "failed"
+                    ]
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.ChangePasswordRequest": {
+            "type": "object",
+            "properties": {
+                "confirmPassword": {
+                    "type": "string"
+                },
+                "currentPassword": {
+                    "type": "string"
+                },
+                "newPassword": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.SetPINRequest": {
             "type": "object",
             "required": [
                 "pin",
@@ -2660,7 +3178,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SetPasswordRequest": {
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.SetPasswordRequest": {
             "type": "object",
             "properties": {
                 "password": {
@@ -2674,7 +3192,99 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SubscribeResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.UserPINResponse": {
+            "type": "object",
+            "properties": {
+                "failed_attempt": {
+                    "type": "integer"
+                },
+                "is_locked": {
+                    "type": "boolean"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.UserPasswordResponse": {
+            "type": "object",
+            "properties": {
+                "failedAttempt": {
+                    "type": "integer"
+                },
+                "isLocked": {
+                    "type": "boolean"
+                },
+                "userID": {
+                    "type": "integer"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPINRequest": {
+            "type": "object",
+            "required": [
+                "pin",
+                "user_id"
+            ],
+            "properties": {
+                "pin": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_security_dto.VerifyPasswordRequest": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_subscribe_dto.CreateSubscriberRequest": {
+            "type": "object",
+            "required": [
+                "call_name",
+                "password",
+                "plan",
+                "price",
+                "start_date",
+                "username"
+            ],
+            "properties": {
+                "call_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "plan": {
+                    "type": "string",
+                    "enum": [
+                        "pppoe",
+                        "hotspot"
+                    ]
+                },
+                "price": {
+                    "type": "number"
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscribeResponse": {
             "type": "object",
             "properties": {
                 "callname": {
@@ -2706,13 +3316,13 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SubscriberListResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.SubscriberResponse"
+                        "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberResponse"
                     }
                 },
                 "page": {
@@ -2726,7 +3336,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.SubscriberResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_subscribe_dto.SubscriberResponse": {
             "type": "object",
             "properties": {
                 "call_name": {
@@ -2758,43 +3368,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdatePaymentRequest": {
-            "type": "object",
-            "required": [
-                "status"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "pending",
-                        "completed",
-                        "failed",
-                        "canceled"
-                    ]
-                }
-            }
-        },
-        "dto.UpdateScanRequest": {
-            "type": "object",
-            "required": [
-                "status"
-            ],
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "pending",
-                        "completed",
-                        "failed"
-                    ]
-                }
-            }
-        },
-        "dto.UpdateSubscriberRequest": {
+        "github_com_novriyantoAli_moodly_internal_application_subscribe_dto.UpdateSubscriberRequest": {
             "type": "object",
             "properties": {
                 "call_name": {
@@ -2821,7 +3395,43 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateUserRequest": {
+        "github_com_novriyantoAli_moodly_internal_application_user_dto.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "full_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_user_dto.LoginUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_user_dto.UpdateUserRequest": {
             "type": "object",
             "properties": {
                 "full_name": {
@@ -2840,13 +3450,13 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserListResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_user_dto.UserListResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dto.UserResponse"
+                        "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UserResponse"
                     }
                 },
                 "page": {
@@ -2860,38 +3470,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UserPINResponse": {
-            "type": "object",
-            "properties": {
-                "failed_attempt": {
-                    "type": "integer"
-                },
-                "is_locked": {
-                    "type": "boolean"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.UserPasswordResponse": {
-            "type": "object",
-            "properties": {
-                "failedAttempt": {
-                    "type": "integer"
-                },
-                "isLocked": {
-                    "type": "boolean"
-                },
-                "userID": {
-                    "type": "integer"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.UserResponse": {
+        "github_com_novriyantoAli_moodly_internal_application_user_dto.UserResponse": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -2913,32 +3492,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updated_at": {
-                    "type": "string"
-                }
-            }
-        },
-        "dto.VerifyPINRequest": {
-            "type": "object",
-            "required": [
-                "pin",
-                "user_id"
-            ],
-            "properties": {
-                "pin": {
-                    "type": "string"
-                },
-                "user_id": {
-                    "type": "integer"
-                }
-            }
-        },
-        "dto.VerifyPasswordRequest": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
                     "type": "string"
                 }
             }

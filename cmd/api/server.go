@@ -60,11 +60,24 @@ func Run(lifecycle fx.Lifecycle, cfg *config.Config, logger *zap.Logger, apiServ
 	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			go func() {
-				logger.Info("Starting HTTP API api",
-					zap.String("addr", server.server.Addr))
+				// logger.Info("Starting HTTP API api",
+				// 	zap.String("addr", server.server.Addr))
 
-				if err := server.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-					logger.Fatal("Failed to start API api", zap.Error(err))
+				// if err := server.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				// 	logger.Fatal("Failed to start API api", zap.Error(err))
+				// }
+				if cfg.Server.EnableTLS {
+					logger.Info("Starting HTTPS API server",
+						zap.String("address", server.server.Addr))
+					if err := server.server.ListenAndServeTLS(server.config.Server.CertFile, server.config.Server.KeyFile); err != nil && err != http.ErrServerClosed {
+						logger.Fatal("Failed to start HTTPS API server", zap.Error(err))
+					}
+				} else {
+					logger.Info("Starting HTTP API server",
+						zap.String("address", server.server.Addr))
+					if err := server.server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+						logger.Fatal("Failed to start HTTP API server", zap.Error(err))
+					}
 				}
 			}()
 

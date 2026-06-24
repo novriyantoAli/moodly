@@ -14,6 +14,7 @@ import (
 	securityHandler "github.com/novriyantoAli/moodly/internal/application/security/handler"
 	subscribeHandler "github.com/novriyantoAli/moodly/internal/application/subscribe/handler"
 	userHandler "github.com/novriyantoAli/moodly/internal/application/user/handler"
+	consultationHandler "github.com/novriyantoAli/moodly/internal/application/consultation/handler"
 	"github.com/novriyantoAli/moodly/internal/middleware"
 	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
 
@@ -33,6 +34,7 @@ type Server struct {
 	logoutHandler      *authHandler.LogoutHandler
 	jwtManager         *jwt.JWTManager
 	logger             *zap.Logger
+	consultationHandler *consultationHandler.ConsultationHandler
 }
 
 func NewServer(
@@ -48,6 +50,7 @@ func NewServer(
 	logoutHandler *authHandler.LogoutHandler,
 	jwtManager *jwt.JWTManager,
 	logger *zap.Logger,
+	consultationHandler *consultationHandler.ConsultationHandler,
 ) *Server {
 	return &Server{
 		oauthHandler:       oauthHandler,
@@ -62,6 +65,7 @@ func NewServer(
 		logoutHandler:      logoutHandler,
 		jwtManager:         jwtManager,
 		logger:             logger,
+		consultationHandler: consultationHandler,
 	}
 }
 
@@ -97,6 +101,7 @@ func (s *Server) SetupRoutes(router *gin.Engine) {
 		s.scanHandler.RegisterRoutes(api)
 		s.logoutHandler.RegisterRoutes(api)
 		s.userPINHandler.RegisterRoutes(api)
+		s.consultationHandler.RegisterRoutes(api)
 	}
 
 }

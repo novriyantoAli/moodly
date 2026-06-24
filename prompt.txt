@@ -1,0 +1,23 @@
+buatkan saya dokumen untuk:
+ project brief, 
+ go / no-go project
+ high level scope
+
+dengan pertanyaan dan jawaban sebagai berikut
+
+1. apa bisnis perusahaan ?
+ - jawaban: Akademi atau Pusat Pembinaan Olahraga
+
+2. produk atau layanan utama ?
+ - jawaban: 1. Program Pelatihan Atlet
+            2. Program Pengembangan Prestasi
+
+3. siapa target pengguna ?
+ - jawaban: atlit, pelatih dan psikolog
+
+4. apa masalah terbesar saat ini
+ - jawaban: atlit sering mengalami penurunan motivasi, kelelahan mental dan stres
+ - jawaban: belum ada sistem terpusat untuk monitoring kesehatan mental dan performa atlit
+ 
+5. dampak masalah tersebut terhadap bisnis
+ - jawaban: 
