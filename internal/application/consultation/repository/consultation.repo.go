@@ -11,7 +11,7 @@ type ConsultationRepository interface {
 	GetConversations(userID uint) ([]entity.Conversation, error)
 	GetConversationByID(id uuid.UUID) (*entity.Conversation, error)
 	UpdateConversationStatus(id uuid.UUID, status entity.ConsultationStatus) error
-	
+
 	CreateMessage(message *entity.Message) error
 	GetMessageByID(id uuid.UUID) (*entity.Message, error)
 	GetMessages(conversationID uuid.UUID, cursor uuid.UUID, limit int) ([]entity.Message, error)
@@ -67,14 +67,14 @@ func (r *consultationRepository) GetMessageByID(id uuid.UUID) (*entity.Message, 
 func (r *consultationRepository) GetMessages(conversationID uuid.UUID, cursor uuid.UUID, limit int) ([]entity.Message, error) {
 	var messages []entity.Message
 	query := r.db.Where("conversation_id = ?", conversationID).Order("created_at DESC")
-	
+
 	if cursor != uuid.Nil {
 		var cursorMessage entity.Message
 		if err := r.db.First(&cursorMessage, "id = ?", cursor).Error; err == nil {
 			query = query.Where("created_at < ?", cursorMessage.CreatedAt)
 		}
 	}
-	
+
 	err := query.Limit(limit).Find(&messages).Error
 	return messages, err
 }

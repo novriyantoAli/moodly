@@ -1,15 +1,12 @@
 package contract
 
-type TokenService interface {
-	GenerateToken(
-		userID uint,
-		email string,
-		level string,
-	) (string, error)
+import (
+	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
+)
 
-	GenerateRefreshToken(
-		userID uint,
-		email string,
-		level string,
-	) (string, error)
+type TokenService interface {
+	GenerateToken(userID uint, email, level string, roles []string) (string, error)
+	GenerateRefreshToken(userID uint, email, level string, roles []string) (string, error)
+	ValidateToken(token string) (*jwt.Claims, error)
+	ValidateRefreshToken(token string) (*jwt.Claims, error)
 }

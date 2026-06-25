@@ -27,7 +27,7 @@ func (s *Scheduler) RegisterJobs() {
 
 	// Register bill workers
 	s.queueScheduler.RegisterJobs(task.TypeGenerateMonthlyBills)
-	
+
 	s.queueScheduler.RegisterJobs(task.TypeCheckUnpaidBills)
 
 	s.logger.Info("Worker handlers registered successfully")

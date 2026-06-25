@@ -26,7 +26,7 @@ const (
 )
 
 type Conversation struct {
-	ID             uuid.UUID          `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID             uuid.UUID          `gorm:"primaryKey;type:uuid"`
 	ParticipantID  uint               `gorm:"not null"`
 	Participant    userEntity.User    `gorm:"foreignKey:ParticipantID"`
 	PsychologistID uint               `gorm:"not null"`
@@ -43,7 +43,7 @@ func (c Conversation) TableName() string {
 }
 
 type Message struct {
-	ID             uuid.UUID       `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID             uuid.UUID       `gorm:"primaryKey;type:uuid"`
 	ConversationID uuid.UUID       `gorm:"type:uuid;not null"`
 	Conversation   Conversation    `gorm:"foreignKey:ConversationID;constraint:OnDelete:CASCADE;"`
 	SenderID       uint            `gorm:"not null"`
@@ -59,7 +59,7 @@ func (m Message) TableName() string {
 }
 
 type MessageAttachment struct {
-	ID          uuid.UUID `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID          uuid.UUID `gorm:"primaryKey;type:uuid"`
 	MessageID   uuid.UUID `gorm:"type:uuid;not null"`
 	Message     Message   `gorm:"foreignKey:MessageID;constraint:OnDelete:CASCADE;"`
 	FileName    string    `gorm:"type:text"`
@@ -74,7 +74,7 @@ func (ma MessageAttachment) TableName() string {
 }
 
 type MessageRead struct {
-	ID        uuid.UUID       `gorm:"primaryKey;type:uuid;default:uuid_generate_v4()"`
+	ID        uuid.UUID       `gorm:"primaryKey;type:uuid"`
 	MessageID uuid.UUID       `gorm:"type:uuid;not null"`
 	Message   Message         `gorm:"foreignKey:MessageID;constraint:OnDelete:CASCADE;"`
 	UserID    uint            `gorm:"not null"`

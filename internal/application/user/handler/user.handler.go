@@ -6,6 +6,7 @@ import (
 
 	"github.com/novriyantoAli/moodly/internal/application/user/dto"
 	"github.com/novriyantoAli/moodly/internal/application/user/service"
+	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -55,6 +56,40 @@ func (h *UserHandler) CreateUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusCreated, gin.H{"data": user})
+}
+
+// GetActiveUser godoc
+// @Summary Get active user info
+// @Description Get currently active user details based on JWT token
+// @Tags users
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} map[string]interface{} "User details"
+// @Failure 401 {object} map[string]interface{} "Unauthorized"
+// @Failure 404 {object} map[string]interface{} "User not found"
+// @Router /users/user [get]
+func (h *UserHandler) GetActiveUser(ctx *gin.Context) {
+	claimsValue := ctx.Request.Context().Value(jwt.ClaimsKey)
+	if claimsValue == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	claims, ok := claimsValue.(*jwt.Claims)
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+		return
+	}
+
+	user, err := h.service.GetUserByID(ctx.Request.Context(), claims.UserID)
+	if err != nil {
+		h.logger.Error("Failed to get active user", zap.Error(err))
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"data": user})
 }
 
 // GetUser godoc
@@ -255,6 +290,7 @@ func (h *UserHandler) RegisterRoutes(api *gin.RouterGroup) {
 	{
 		users.POST("", h.CreateUser)
 		users.GET("", h.GetUsers)
+		users.GET("/user", h.GetActiveUser)
 		users.GET("/:id", h.GetUser)
 		users.PUT("/:id", h.UpdateUser)
 		users.DELETE("/:id", h.DeleteUser)

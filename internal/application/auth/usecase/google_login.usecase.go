@@ -9,6 +9,7 @@ import (
 	"github.com/novriyantoAli/moodly/internal/application/auth/service"
 	common "github.com/novriyantoAli/moodly/internal/application/common/contract"
 	securityEntity "github.com/novriyantoAli/moodly/internal/application/security/entity"
+	securityRepo "github.com/novriyantoAli/moodly/internal/application/security/repository"
 	securityService "github.com/novriyantoAli/moodly/internal/application/security/service"
 	userDto "github.com/novriyantoAli/moodly/internal/application/user/dto"
 	userService "github.com/novriyantoAli/moodly/internal/application/user/service"
@@ -27,6 +28,7 @@ type googleLoginUseCase struct {
 	sessionSvc service.AuthSessionService
 	attemptSvc service.LoginAttemptService
 
+	authRepo     securityRepo.AuthorizationRepository
 	tokenService common.TokenService
 
 	logger *zap.Logger
@@ -40,6 +42,7 @@ func NewGoogleLoginUseCase(
 	sessionSvc service.AuthSessionService,
 	attemptSvc service.LoginAttemptService,
 
+	authRepo securityRepo.AuthorizationRepository,
 	tokenService common.TokenService,
 
 	logger *zap.Logger,
@@ -51,6 +54,7 @@ func NewGoogleLoginUseCase(
 		oauthSvc:     oauthSvc,
 		sessionSvc:   sessionSvc,
 		attemptSvc:   attemptSvc,
+		authRepo:     authRepo,
 		tokenService: tokenService,
 		logger:       logger,
 	}
@@ -75,27 +79,19 @@ func (uc *googleLoginUseCase) Execute(
 		googleUser.Subject,
 	)
 
-	var userID uint
-	var email string
-	var level string
+	var user *userDto.UserResponse
+	isNewUser := false
 
 	if err == nil {
-
-		user, err := uc.userSvc.GetUserByID(
+		user, err = uc.userSvc.GetUserByID(
 			ctx,
 			userOAuth.UserID,
 		)
 		if err != nil {
 			return nil, err
 		}
-
-		userID = user.ID
-		email = user.Email
-		level = user.Level
-
 	} else {
-
-		user, err := uc.userSvc.CreateUser(
+		user, err = uc.userSvc.CreateUser(
 			ctx,
 			&userDto.CreateUserRequest{
 				Email:    googleUser.Email,
@@ -120,25 +116,45 @@ func (uc *googleLoginUseCase) Execute(
 		if err != nil {
 			return nil, err
 		}
+		isNewUser = true
+	}
 
-		userID = user.ID
-		email = user.Email
-		level = user.Level
+	// Ambil roles dan permissions
+	rolesEntities, err := uc.authRepo.GetRolesByUserID(ctx, user.ID)
+	if err != nil {
+		uc.logger.Warn("Failed to fetch roles", zap.Error(err))
+	}
+	var roleNames []string
+	for _, r := range rolesEntities {
+		roleNames = append(roleNames, r.Name)
+	}
+
+	permissions, err := uc.authRepo.GetPermissionsByRoles(ctx, roleNames)
+	if err != nil {
+		uc.logger.Warn("Failed to fetch permissions", zap.Error(err))
+	}
+	if permissions == nil {
+		permissions = []string{}
+	}
+	if roleNames == nil {
+		roleNames = []string{}
 	}
 
 	accessToken, err := uc.tokenService.GenerateToken(
-		userID,
-		email,
-		level,
+		user.ID,
+		user.Email,
+		user.Level,
+		roleNames,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	refreshToken, err := uc.tokenService.GenerateRefreshToken(
-		userID,
-		email,
-		level,
+		user.ID,
+		user.Email,
+		user.Level,
+		roleNames,
 	)
 	if err != nil {
 		return nil, err
@@ -151,7 +167,7 @@ func (uc *googleLoginUseCase) Execute(
 	err = uc.sessionSvc.CreateSession(
 		ctx,
 		&entity.AuthSession{
-			UserID:       userID,
+			UserID:       user.ID,
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 			ExpiredAt:    expiredAt,
@@ -166,8 +182,8 @@ func (uc *googleLoginUseCase) Execute(
 	_ = uc.attemptSvc.CreateAttempt(
 		ctx,
 		&entity.LoginAttempt{
-			UserID:    &userID,
-			Username:  email,
+			UserID:    &user.ID,
+			Username:  user.Email,
 			Success:   true,
 			IPAddress: req.IPAddress,
 			UserAgent: req.UserAgent,
@@ -179,5 +195,9 @@ func (uc *googleLoginUseCase) Execute(
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 		ExpiredAt:    expiredAt.Unix(),
+		UserID:       user.ID,
+		IsNewUser:    isNewUser,
+		Roles:        roleNames,
+		Permissions:  permissions,
 	}, nil
 }

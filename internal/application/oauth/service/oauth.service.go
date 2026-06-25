@@ -11,10 +11,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/novriyantoAli/moodly/internal/application/common/contract"
 	"github.com/novriyantoAli/moodly/internal/application/oauth/dto"
+	securityRepo "github.com/novriyantoAli/moodly/internal/application/security/repository"
 	"github.com/novriyantoAli/moodly/internal/application/user/entity"
-	"github.com/novriyantoAli/moodly/internal/application/user/repository"
-	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
+	userRepo "github.com/novriyantoAli/moodly/internal/application/user/repository"
+	userService "github.com/novriyantoAli/moodly/internal/application/user/service"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -87,16 +89,20 @@ type oauthService struct {
 	config        OAuthConfig
 	logger        *zap.Logger
 	oauth2Configs map[dto.OAuthProvider]*oauth2.Config
-	userRepo      repository.UserRepository
-	jwtManager    *jwt.JWTManager
+	userRepo      userRepo.UserRepository
+	authRepo      securityRepo.AuthorizationRepository
+	jwtManager    contract.TokenService
+	userService   userService.UserService
 }
 
 // NewOAuthService creates a new OAuth service instance
-func NewOAuthService(config OAuthConfig, logger *zap.Logger, userRepo repository.UserRepository, jwtManager *jwt.JWTManager) OAuthService {
+func NewOAuthService(config OAuthConfig, logger *zap.Logger, userRepo userRepo.UserRepository, authRepo securityRepo.AuthorizationRepository, userService userService.UserService, jwtManager contract.TokenService) OAuthService {
 	service := &oauthService{
 		config:        config,
 		logger:        logger,
 		userRepo:      userRepo,
+		authRepo:      authRepo,
+		userService:   userService,
 		jwtManager:    jwtManager,
 		oauth2Configs: make(map[dto.OAuthProvider]*oauth2.Config),
 	}
@@ -113,7 +119,7 @@ func NewOAuthService(config OAuthConfig, logger *zap.Logger, userRepo repository
 // GetAuthorizationURL generates the OAuth authorization URL
 func (s *oauthService) GetAuthorizationURL(ctx context.Context, provider dto.OAuthProvider, redirectURI string) (*dto.OAuthAuthorizationURLResponse, error) {
 	// Generate state as a JWT token for security verification
-	state, err := s.jwtManager.GenerateToken(0, "", "oauth_state")
+	state, err := s.jwtManager.GenerateToken(0, "", "oauth_state", nil)
 	if err != nil {
 		s.logger.Error("Failed to generate state token", zap.Error(err))
 		return nil, err
@@ -221,7 +227,7 @@ func (s *oauthService) GetUserInfo(ctx context.Context, provider dto.OAuthProvid
 }
 
 func (s *oauthService) GetCurrentUser(ctx context.Context, token string) (*entity.User, error) {
-	claims, err := s.jwtManager.VerifyToken(token)
+	claims, err := s.jwtManager.ValidateToken(token)
 	if err != nil {
 		s.logger.Warn("Invalid token provided", zap.Error(err))
 		return nil, errors.New("invalid or expired token")
@@ -253,7 +259,8 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 		return nil, errors.New("state parameter is required")
 	}
 
-	claims, err := s.jwtManager.VerifyToken(state)
+	// Verify state token
+	claims, err := s.jwtManager.ValidateToken(state)
 	if err != nil {
 		s.logger.Error("Invalid or expired state token", zap.Error(err))
 		return nil, fmt.Errorf("invalid or expired state token: %w", err)
@@ -283,10 +290,48 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 		return nil, err
 	}
 
+	// Ambil roles dan permissions
+	rolesEntities, err := s.authRepo.GetRolesByUserID(ctx, user.ID)
+	if err != nil {
+		s.logger.Warn("Failed to fetch roles", zap.Error(err))
+	}
+	var roleNames []string
+	for _, r := range rolesEntities {
+		roleNames = append(roleNames, r.Name)
+	}
+
+	permissions, err := s.authRepo.GetPermissionsByRoles(ctx, roleNames)
+	if err != nil {
+		s.logger.Warn("Failed to fetch permissions", zap.Error(err))
+	}
+	if permissions == nil {
+		permissions = []string{}
+	}
+	if roleNames == nil {
+		roleNames = []string{}
+	}
+
 	// Generate JWT token
-	token, err := s.jwtManager.GenerateToken(user.ID, user.Email, string(user.Level))
+	accessToken, err := s.jwtManager.GenerateToken(
+		user.ID,
+		user.Email,
+		user.Level,
+		roleNames,
+	)
 	if err != nil {
 		s.logger.Error("Failed to generate JWT token", zap.Error(err))
+		return nil, err
+	}
+
+	// Buat refresh token
+	refreshToken, err := s.jwtManager.GenerateRefreshToken(
+		user.ID,
+		user.Email,
+		user.Level,
+		roleNames,
+	)
+	if err != nil {
+		s.logger.Error("Failed to generate refresh token", zap.Error(err))
 		return nil, err
 	}
 
@@ -296,8 +341,13 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 		zap.Uint("db_user_id", user.ID))
 
 	return &dto.OAuthLoginResponse{
-		Token:    token,
-		UserInfo: *userInfo,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiredAt:    time.Now().Add(24 * time.Hour).Unix(), // Replace with actual expiration
+		UserID:       user.ID,
+		IsNewUser:    false, // Optional enhancement: detect if user was just created
+		Roles:        roleNames,
+		Permissions:  permissions,
 	}, nil
 }
 

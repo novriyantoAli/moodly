@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	
+
 	"github.com/google/uuid"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/entity"
@@ -33,11 +33,11 @@ func (s *consultationService) CreateConsultation(participantID uint, req *dto.Cr
 		PsychologistID: req.PsychologistID,
 		Status:         entity.StatusWaiting,
 	}
-	
+
 	if err := s.repo.CreateConversation(conv); err != nil {
 		return nil, err
 	}
-	
+
 	return &dto.CreateConsultationResponse{
 		ConversationID: conv.ID,
 		Status:         conv.Status,
@@ -49,7 +49,7 @@ func (s *consultationService) GetConsultations(userID uint) ([]dto.ConsultationR
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var responses []dto.ConsultationResponse
 	for _, c := range convs {
 		responses = append(responses, dto.ConsultationResponse{
@@ -72,7 +72,7 @@ func (s *consultationService) GetConsultationByID(id uuid.UUID, userID uint) (*d
 	if c.ParticipantID != userID && c.PsychologistID != userID {
 		return nil, errors.New("unauthorized access to conversation")
 	}
-	
+
 	return &dto.ConsultationResponse{
 		ConversationID: c.ID,
 		PsychologistID: c.PsychologistID,
@@ -91,18 +91,18 @@ func (s *consultationService) SendMessage(conversationID uuid.UUID, senderID uin
 	if c.ParticipantID != senderID && c.PsychologistID != senderID {
 		return nil, errors.New("unauthorized to send message in this conversation")
 	}
-	
+
 	msg := &entity.Message{
 		ConversationID: conversationID,
 		SenderID:       senderID,
 		MessageType:    req.MessageType,
 		Message:        req.Message,
 	}
-	
+
 	if err := s.repo.CreateMessage(msg); err != nil {
 		return nil, err
 	}
-	
+
 	return &dto.MessageResponse{
 		MessageID:      msg.ID,
 		ConversationID: msg.ConversationID,
@@ -121,12 +121,12 @@ func (s *consultationService) GetMessages(conversationID uuid.UUID, userID uint,
 	if c.ParticipantID != userID && c.PsychologistID != userID {
 		return nil, errors.New("unauthorized to view messages in this conversation")
 	}
-	
+
 	msgs, err := s.repo.GetMessages(conversationID, cursor, limit)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	var responses []dto.MessageResponse
 	for _, m := range msgs {
 		responses = append(responses, dto.MessageResponse{
@@ -146,20 +146,20 @@ func (s *consultationService) MarkMessageRead(conversationID uuid.UUID, userID u
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if msg.ConversationID != conversationID {
 		return nil, errors.New("message does not belong to conversation")
 	}
-	
+
 	read := &entity.MessageRead{
 		MessageID: req.MessageID,
 		UserID:    userID,
 	}
-	
+
 	if err := s.repo.MarkMessageAsRead(read); err != nil {
 		return nil, err
 	}
-	
+
 	return &dto.MessageResponse{
 		MessageID:      msg.ID,
 		ConversationID: msg.ConversationID,
@@ -175,15 +175,15 @@ func (s *consultationService) CloseConsultation(conversationID uuid.UUID, userID
 	if err != nil {
 		return nil, err
 	}
-	
+
 	if c.ParticipantID != userID && c.PsychologistID != userID {
 		return nil, errors.New("unauthorized to close this conversation")
 	}
-	
+
 	if err := s.repo.UpdateConversationStatus(conversationID, entity.StatusClosed); err != nil {
 		return nil, err
 	}
-	
+
 	return &dto.CloseConsultationResponse{
 		ConversationID: conversationID,
 		Status:         entity.StatusClosed,
