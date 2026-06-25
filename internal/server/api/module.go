@@ -8,13 +8,13 @@ import (
 
 	authHandler "github.com/novriyantoAli/moodly/internal/application/auth/handler"
 	billHandler "github.com/novriyantoAli/moodly/internal/application/bill/handler"
+	consultationHandler "github.com/novriyantoAli/moodly/internal/application/consultation/handler"
 	oauthHandler "github.com/novriyantoAli/moodly/internal/application/oauth/handler"
 	paymentHandler "github.com/novriyantoAli/moodly/internal/application/payment/handler"
 	scanHandler "github.com/novriyantoAli/moodly/internal/application/scan/handler"
 	securityHandler "github.com/novriyantoAli/moodly/internal/application/security/handler"
 	subscribeHandler "github.com/novriyantoAli/moodly/internal/application/subscribe/handler"
 	userHandler "github.com/novriyantoAli/moodly/internal/application/user/handler"
-	consultationHandler "github.com/novriyantoAli/moodly/internal/application/consultation/handler"
 	"github.com/novriyantoAli/moodly/internal/middleware"
 	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
 
@@ -22,18 +22,18 @@ import (
 )
 
 type Server struct {
-	oauthHandler       *oauthHandler.OAuthHandler
-	userHandler        *userHandler.UserHandler
-	paymentHandler     *paymentHandler.PaymentHandler
-	subscribeHandler   *subscribeHandler.SubscribeHandler
-	billHandler        *billHandler.BillHandler
-	scanHandler        *scanHandler.ScanHandler
-	userPINHandler     *securityHandler.UserPINHandler
-	loginHandler       *authHandler.LoginHandler
-	googleLoginHandler *authHandler.GoogleLoginHandler
-	logoutHandler      *authHandler.LogoutHandler
-	jwtManager         *jwt.JWTManager
-	logger             *zap.Logger
+	oauthHandler        *oauthHandler.OAuthHandler
+	userHandler         *userHandler.UserHandler
+	paymentHandler      *paymentHandler.PaymentHandler
+	subscribeHandler    *subscribeHandler.SubscribeHandler
+	billHandler         *billHandler.BillHandler
+	scanHandler         *scanHandler.ScanHandler
+	userPINHandler      *securityHandler.UserPINHandler
+	loginHandler        *authHandler.LoginHandler
+	googleLoginHandler  *authHandler.GoogleLoginHandler
+	logoutHandler       *authHandler.LogoutHandler
+	jwtManager          *jwt.JWTManager
+	logger              *zap.Logger
 	consultationHandler *consultationHandler.ConsultationHandler
 }
 
@@ -53,18 +53,18 @@ func NewServer(
 	consultationHandler *consultationHandler.ConsultationHandler,
 ) *Server {
 	return &Server{
-		oauthHandler:       oauthHandler,
-		userHandler:        userHandler,
-		paymentHandler:     paymentHandler,
-		subscribeHandler:   subscribeHandler,
-		billHandler:        billHandler,
-		scanHandler:        scanHandler,
-		userPINHandler:     userPINHandler,
-		loginHandler:       loginHandler,
-		googleLoginHandler: googleLoginHandler,
-		logoutHandler:      logoutHandler,
-		jwtManager:         jwtManager,
-		logger:             logger,
+		oauthHandler:        oauthHandler,
+		userHandler:         userHandler,
+		paymentHandler:      paymentHandler,
+		subscribeHandler:    subscribeHandler,
+		billHandler:         billHandler,
+		scanHandler:         scanHandler,
+		userPINHandler:      userPINHandler,
+		loginHandler:        loginHandler,
+		googleLoginHandler:  googleLoginHandler,
+		logoutHandler:       logoutHandler,
+		jwtManager:          jwtManager,
+		logger:              logger,
 		consultationHandler: consultationHandler,
 	}
 }

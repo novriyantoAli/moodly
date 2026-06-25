@@ -20,9 +20,10 @@ type JWTConfig struct {
 }
 
 type Claims struct {
-	UserID uint   `json:"user_id"`
-	Email  string `json:"email"`
-	Level  string `json:"level"`
+	UserID uint     `json:"user_id"`
+	Email  string   `json:"email"`
+	Level  string   `json:"level"`
+	Roles  []string `json:"roles"`
 	gojwt.RegisteredClaims
 }
 
@@ -50,14 +51,15 @@ func NewJWTManagerWithRedis(cfg *config.Config, redisClient *redis.Client) *JWTM
 	}
 }
 
-// GenerateToken generates a JWT token for the given user
-func (m *JWTManager) GenerateToken(userID uint, email string, level string) (string, error) {
+// GenerateToken generates a new JWT token for a given user id, email, level and roles
+func (m *JWTManager) GenerateToken(userID uint, email, level string, roles []string) (string, error) {
 	expirationTime := time.Now().UTC().Add(m.config.Expiry)
 
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,
 		Level:  level,
+		Roles:  roles,
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(expirationTime),
 			IssuedAt:  gojwt.NewNumericDate(time.Now()),
@@ -74,16 +76,18 @@ func (m *JWTManager) GenerateToken(userID uint, email string, level string) (str
 	return tokenString, nil
 }
 
-func (m *JWTManager) GenerateRefreshToken(userID uint, email string, level string) (string, error) {
+// GenerateRefreshToken generates a new refresh token for a given user id, email, level and roles
+func (m *JWTManager) GenerateRefreshToken(userID uint, email, level string, roles []string) (string, error) {
 	expirationTime := time.Now().UTC().Add(7 * 24 * time.Hour)
 
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,
 		Level:  level,
+		Roles:  roles,
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(expirationTime),
-			IssuedAt:  gojwt.NewNumericDate(time.Now().UTC()),
+			IssuedAt:  gojwt.NewNumericDate(time.Now()),
 			NotBefore: gojwt.NewNumericDate(time.Now().UTC()),
 		},
 	}
@@ -137,6 +141,13 @@ func (m *JWTManager) ValidateToken(tokenString string) (*Claims, error) {
 	}
 
 	return claims, nil
+}
+
+// VerifyToken verifies a JWT token and returns the claims
+func (m *JWTManager) ValidateRefreshToken(tokenString string) (*Claims, error) {
+	// The validation logic for refresh token is exactly the same as access token
+	// because they are both signed with the same secret, only their expiry times differ during generation.
+	return m.ValidateToken(tokenString)
 }
 
 // VerifyToken verifies a JWT token and returns the claims

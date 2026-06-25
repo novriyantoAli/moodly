@@ -8,8 +8,10 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	ExpiredAt    int64  `json:"expired_at"`
-	UserID       uint   `json:"user_id"`
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	ExpiredAt    int64    `json:"expired_at"`
+	UserID       uint     `json:"user_id"`
+	Roles        []string `json:"roles"`
+	Permissions  []string `json:"permissions"`
 }

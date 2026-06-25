@@ -39,18 +39,18 @@ func getUserID(c *gin.Context) (uint, bool) {
 	if !exists {
 		return 0, false
 	}
-    
-    switch v := userIDStr.(type) {
-    case string:
-        id, _ := strconv.ParseUint(v, 10, 32)
-        return uint(id), true
-    case float64:
-        return uint(v), true
-    case uint:
-        return v, true
-    case int:
-        return uint(v), true
-    }
+
+	switch v := userIDStr.(type) {
+	case string:
+		id, _ := strconv.ParseUint(v, 10, 32)
+		return uint(id), true
+	case float64:
+		return uint(v), true
+	case uint:
+		return v, true
+	case int:
+		return uint(v), true
+	}
 	return 0, false
 }
 
@@ -251,7 +251,7 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	if res == nil {
 		res = []dto.MessageResponse{}
 	}
