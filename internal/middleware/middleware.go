@@ -1,13 +1,13 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
+	"github.com/novriyantoAli/moodly/internal/security"
 	"go.uber.org/zap"
 )
 
@@ -91,8 +91,13 @@ func JWTMiddleware(jwtManager *jwt.JWTManager) gin.HandlerFunc {
 			return
 		}
 
-		// 🔥 inject ke context
-		ctx := context.WithValue(c.Request.Context(), jwt.ClaimsKey, claims)
+		principal := security.Principal{
+			UserID: claims.UserID,
+			Roles: claims.Roles,
+			// Permissions: claims.Permissions,
+		}
+
+		ctx := security.WithPrincipal(c.Request.Context(), principal)
 		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()

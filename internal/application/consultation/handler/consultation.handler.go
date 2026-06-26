@@ -7,20 +7,21 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
-	"github.com/novriyantoAli/moodly/internal/application/consultation/service"
+	"github.com/novriyantoAli/moodly/internal/application/consultation/usecase"
 	securityService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
 	"github.com/novriyantoAli/moodly/internal/middleware"
+	"github.com/novriyantoAli/moodly/internal/security"
 	"go.uber.org/zap"
 )
 
 type ConsultationHandler struct {
-	service  service.ConsultationService
-	authSvc  securityService.AuthorizationService
-	logger   *zap.Logger
+	usecase usecase.ConsultationUsecase
+	authSvc securityService.AuthorizationService
+	logger  *zap.Logger
 }
 
-func NewConsultationHandler(s service.ConsultationService, authSvc securityService.AuthorizationService, l *zap.Logger) *ConsultationHandler {
-	return &ConsultationHandler{service: s, authSvc: authSvc, logger: l}
+func NewConsultationHandler(u usecase.ConsultationUsecase, authSvc securityService.AuthorizationService, l *zap.Logger) *ConsultationHandler {
+	return &ConsultationHandler{usecase: u, authSvc: authSvc, logger: l}
 }
 
 func (h *ConsultationHandler) RegisterRoutes(api *gin.RouterGroup) {
@@ -48,7 +49,12 @@ func (h *ConsultationHandler) RegisterRoutes(api *gin.RouterGroup) {
 
 // helper to get user ID from context, assuming it's stored by JWT middleware
 func getUserID(c *gin.Context) (uint, bool) {
-	userIDStr, exists := c.Get("user_id") // adjust key based on JWT middleware
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if ok {
+		return principal.UserID, true
+	}
+	
+	userIDStr, exists := c.Get("user_id") // fallback
 	if !exists {
 		return 0, false
 	}
@@ -80,6 +86,8 @@ func getUserID(c *gin.Context) (uint, bool) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations [post]
 func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
+
+
 	userID, exists := getUserID(c)
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
@@ -92,7 +100,7 @@ func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.CreateConsultation(userID, &req)
+	res, err := h.usecase.CreateConsultation(c.Request.Context(), userID, &req)
 	if err != nil {
 		h.logger.Error("failed to create consultation", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -113,13 +121,13 @@ func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations [get]
 func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
 
-	res, err := h.service.GetConsultations(userID)
+	res, err := h.usecase.GetConsultations(principal.UserID)
 	if err != nil {
 		h.logger.Error("failed to get consultations", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -159,7 +167,7 @@ func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.GetConsultationByID(id, userID)
+	res, err := h.usecase.GetConsultationByID(id, userID)
 	if err != nil {
 		h.logger.Error("failed to get consultation", zap.Error(err))
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -202,7 +210,7 @@ func (h *ConsultationHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.SendMessage(conversationID, userID, &req)
+	res, err := h.usecase.SendMessage(conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to send message", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -258,7 +266,7 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 		}
 	}
 
-	res, err := h.service.GetMessages(conversationID, userID, cursor, limit)
+	res, err := h.usecase.GetMessages(conversationID, userID, cursor, limit)
 	if err != nil {
 		h.logger.Error("failed to get messages", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -305,7 +313,7 @@ func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.MarkMessageRead(conversationID, userID, &req)
+	res, err := h.usecase.MarkMessageRead(conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to mark message as read", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -348,7 +356,7 @@ func (h *ConsultationHandler) CloseConsultation(c *gin.Context) {
 		return
 	}
 
-	res, err := h.service.CloseConsultation(conversationID, userID, &req)
+	res, err := h.usecase.CloseConsultation(conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to close consultation", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
