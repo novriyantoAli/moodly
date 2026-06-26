@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/novriyantoAli/moodly/internal/application/security/entity"
+	"github.com/novriyantoAli/moodly/internal/application/authorization/entity"
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
