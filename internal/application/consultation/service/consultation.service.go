@@ -33,9 +33,6 @@ func (s *consultationService) CreateConsultation(participantID uint, req *dto.Cr
 		PsychologistID: req.PsychologistID,
 		Status:         entity.StatusWaiting,
 	}
-
-	// lakukan validasi pada 
-
 	if err := s.repo.CreateConversation(conv); err != nil {
 		return nil, err
 	}

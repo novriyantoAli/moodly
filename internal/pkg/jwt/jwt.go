@@ -24,6 +24,7 @@ type Claims struct {
 	Email  string   `json:"email"`
 	Level  string   `json:"level"`
 	Roles  []string `json:"roles"`
+	Permission []string `json:"permissions"`
 	gojwt.RegisteredClaims
 }
 

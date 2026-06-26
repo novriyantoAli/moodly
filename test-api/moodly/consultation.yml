@@ -1,0 +1,17 @@
+info:
+  name: consultation
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: https://172.16.0.4:8080/api/v1/consultations
+  auth:
+    type: bearer
+    token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1LCJlbWFpbCI6InVzZXIxQGV4YW1wbGUuY29tIiwibGV2ZWwiOiJhZG1pbiIsInJvbGVzIjpbImF0bGl0Il0sImV4cCI6MTc4MjU2MTUzMiwibmJmIjoxNzgyNDc1MTMyLCJpYXQiOjE3ODI0NzUxMzJ9.0WiN-qI5lU1TEwpuambrUSKjHGbfqaL2cvbTp_nVTBI
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
