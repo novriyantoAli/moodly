@@ -13,7 +13,7 @@ import (
 
 	"github.com/novriyantoAli/moodly/internal/application/common/contract"
 	"github.com/novriyantoAli/moodly/internal/application/oauth/dto"
-	securityRepo "github.com/novriyantoAli/moodly/internal/application/security/repository"
+	authService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
 	"github.com/novriyantoAli/moodly/internal/application/user/entity"
 	userRepo "github.com/novriyantoAli/moodly/internal/application/user/repository"
 	userService "github.com/novriyantoAli/moodly/internal/application/user/service"
@@ -90,18 +90,18 @@ type oauthService struct {
 	logger        *zap.Logger
 	oauth2Configs map[dto.OAuthProvider]*oauth2.Config
 	userRepo      userRepo.UserRepository
-	authRepo      securityRepo.AuthorizationRepository
+	authSvc       authService.AuthorizationService
 	jwtManager    contract.TokenService
 	userService   userService.UserService
 }
 
 // NewOAuthService creates a new OAuth service instance
-func NewOAuthService(config OAuthConfig, logger *zap.Logger, userRepo userRepo.UserRepository, authRepo securityRepo.AuthorizationRepository, userService userService.UserService, jwtManager contract.TokenService) OAuthService {
+func NewOAuthService(config OAuthConfig, logger *zap.Logger, userRepo userRepo.UserRepository, authSvc authService.AuthorizationService, userService userService.UserService, jwtManager contract.TokenService) OAuthService {
 	service := &oauthService{
 		config:        config,
 		logger:        logger,
 		userRepo:      userRepo,
-		authRepo:      authRepo,
+		authSvc:       authSvc,
 		userService:   userService,
 		jwtManager:    jwtManager,
 		oauth2Configs: make(map[dto.OAuthProvider]*oauth2.Config),
@@ -291,7 +291,7 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 	}
 
 	// Ambil roles dan permissions
-	rolesEntities, err := s.authRepo.GetRolesByUserID(ctx, user.ID)
+	rolesEntities, err := s.authSvc.GetRolesByUserID(ctx, user.ID)
 	if err != nil {
 		s.logger.Warn("Failed to fetch roles", zap.Error(err))
 	}
@@ -300,7 +300,7 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 		roleNames = append(roleNames, r.Name)
 	}
 
-	permissions, err := s.authRepo.GetPermissionsByRoles(ctx, roleNames)
+	permissions, err := s.authSvc.GetPermissionsByRoles(ctx, roleNames)
 	if err != nil {
 		s.logger.Warn("Failed to fetch permissions", zap.Error(err))
 	}

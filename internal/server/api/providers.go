@@ -10,6 +10,7 @@ import (
 	"github.com/novriyantoAli/moodly/internal/application/security"
 	"github.com/novriyantoAli/moodly/internal/application/subscribe"
 	"github.com/novriyantoAli/moodly/internal/application/user"
+	"github.com/novriyantoAli/moodly/internal/application/authorization"
 
 	"go.uber.org/fx"
 )
@@ -24,6 +25,7 @@ var Module = fx.Options(
 	bill.Module,
 	scan.Module,
 	security.Module,
+	authorization.Module,
 	consultation.Module,
 	// API api
 	fx.Provide(NewServer),

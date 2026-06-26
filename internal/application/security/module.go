@@ -18,7 +18,6 @@ var Module = fx.Options(
 		repository.NewUserPINRepository,
 		repository.NewUserPasswordRepository,
 		repository.NewUserOAuthRepository,
-		repository.NewAuthorizationRepository,
 		service.NewUserPINService,
 		service.NewUserPasswordService,
 		service.NewUserOAuthService,

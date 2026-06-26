@@ -8,22 +8,35 @@ import (
 	"github.com/google/uuid"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/service"
+	securityService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
+	"github.com/novriyantoAli/moodly/internal/middleware"
 	"go.uber.org/zap"
 )
 
 type ConsultationHandler struct {
-	service service.ConsultationService
-	logger  *zap.Logger
+	service  service.ConsultationService
+	authSvc  securityService.AuthorizationService
+	logger   *zap.Logger
 }
 
-func NewConsultationHandler(s service.ConsultationService, l *zap.Logger) *ConsultationHandler {
-	return &ConsultationHandler{service: s, logger: l}
+func NewConsultationHandler(s service.ConsultationService, authSvc securityService.AuthorizationService, l *zap.Logger) *ConsultationHandler {
+	return &ConsultationHandler{service: s, authSvc: authSvc, logger: l}
 }
 
 func (h *ConsultationHandler) RegisterRoutes(api *gin.RouterGroup) {
 	consultations := api.Group("/consultations")
 	{
-		consultations.POST("", h.CreateConsultation)
+		consultations.POST(
+			"",
+			middleware.RequireRoles([]string{"atlit"}, h.logger),
+			middleware.RequirePermission(
+				h.authSvc,
+				"consultation.create",
+				h.logger,
+			),
+			h.CreateConsultation,
+		)
+
 		consultations.GET("", h.GetConsultations)
 		consultations.GET("/:id", h.GetConsultationByID)
 		consultations.POST("/:id/messages", h.SendMessage)

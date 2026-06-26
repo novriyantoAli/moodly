@@ -9,8 +9,8 @@ import (
 	"github.com/novriyantoAli/moodly/internal/application/auth/service"
 	common "github.com/novriyantoAli/moodly/internal/application/common/contract"
 	securityEntity "github.com/novriyantoAli/moodly/internal/application/security/entity"
-	securityRepo "github.com/novriyantoAli/moodly/internal/application/security/repository"
 	securityService "github.com/novriyantoAli/moodly/internal/application/security/service"
+	authService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
 	userDto "github.com/novriyantoAli/moodly/internal/application/user/dto"
 	userService "github.com/novriyantoAli/moodly/internal/application/user/service"
 	"go.uber.org/zap"
@@ -28,7 +28,7 @@ type googleLoginUseCase struct {
 	sessionSvc service.AuthSessionService
 	attemptSvc service.LoginAttemptService
 
-	authRepo     securityRepo.AuthorizationRepository
+	authSvc      authService.AuthorizationService
 	tokenService common.TokenService
 
 	logger *zap.Logger
@@ -42,7 +42,7 @@ func NewGoogleLoginUseCase(
 	sessionSvc service.AuthSessionService,
 	attemptSvc service.LoginAttemptService,
 
-	authRepo securityRepo.AuthorizationRepository,
+	authSvc authService.AuthorizationService,
 	tokenService common.TokenService,
 
 	logger *zap.Logger,
@@ -54,7 +54,7 @@ func NewGoogleLoginUseCase(
 		oauthSvc:     oauthSvc,
 		sessionSvc:   sessionSvc,
 		attemptSvc:   attemptSvc,
-		authRepo:     authRepo,
+		authSvc:      authSvc,
 		tokenService: tokenService,
 		logger:       logger,
 	}
@@ -120,7 +120,7 @@ func (uc *googleLoginUseCase) Execute(
 	}
 
 	// Ambil roles dan permissions
-	rolesEntities, err := uc.authRepo.GetRolesByUserID(ctx, user.ID)
+	rolesEntities, err := uc.authSvc.GetRolesByUserID(ctx, user.ID)
 	if err != nil {
 		uc.logger.Warn("Failed to fetch roles", zap.Error(err))
 	}
@@ -129,7 +129,7 @@ func (uc *googleLoginUseCase) Execute(
 		roleNames = append(roleNames, r.Name)
 	}
 
-	permissions, err := uc.authRepo.GetPermissionsByRoles(ctx, roleNames)
+	permissions, err := uc.authSvc.GetPermissionsByRoles(ctx, roleNames)
 	if err != nil {
 		uc.logger.Warn("Failed to fetch permissions", zap.Error(err))
 	}
