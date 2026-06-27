@@ -112,8 +112,8 @@ func (uc *loginUseCase) Execute(ctx context.Context, req *dto.LoginRequest) (*dt
 	accessToken, err := uc.tokenService.GenerateToken(
 		user.ID,
 		user.Email,
-		user.Level,
 		roleNames,
+		permissions,
 	)
 	if err != nil {
 		return nil, err
@@ -122,8 +122,8 @@ func (uc *loginUseCase) Execute(ctx context.Context, req *dto.LoginRequest) (*dt
 	refreshToken, err := uc.tokenService.GenerateRefreshToken(
 		user.ID,
 		user.Email,
-		user.Level,
 		roleNames,
+		permissions,
 	)
 	if err != nil {
 		return nil, err

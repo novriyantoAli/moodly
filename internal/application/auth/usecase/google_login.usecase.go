@@ -143,8 +143,8 @@ func (uc *googleLoginUseCase) Execute(
 	accessToken, err := uc.tokenService.GenerateToken(
 		user.ID,
 		user.Email,
-		user.Level,
 		roleNames,
+		permissions,
 	)
 	if err != nil {
 		return nil, err
@@ -153,8 +153,8 @@ func (uc *googleLoginUseCase) Execute(
 	refreshToken, err := uc.tokenService.GenerateRefreshToken(
 		user.ID,
 		user.Email,
-		user.Level,
 		roleNames,
+		permissions,
 	)
 	if err != nil {
 		return nil, err

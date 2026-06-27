@@ -1,8 +1,8 @@
 package service
 
 import (
+	"context"
 	"errors"
-
 	"github.com/google/uuid"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/entity"
@@ -10,13 +10,15 @@ import (
 )
 
 type ConsultationService interface {
-	CreateConsultation(participantID uint, req *dto.CreateConsultationRequest) (*dto.CreateConsultationResponse, error)
-	GetConsultations(userID uint) ([]dto.ConsultationResponse, error)
-	GetConsultationByID(id uuid.UUID, userID uint) (*dto.ConsultationResponse, error)
-	SendMessage(conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error)
-	GetMessages(conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error)
-	MarkMessageRead(conversationID uuid.UUID, userID uint, req *dto.MarkMessageReadRequest) (*dto.MessageResponse, error)
-	CloseConsultation(conversationID uuid.UUID, userID uint, req *dto.CloseConsultationRequest) (*dto.CloseConsultationResponse, error)
+	ValidateConsultation(ctx context.Context, id uuid.UUID, userID uint) (bool, error)
+	CreateConsultation(ctx context.Context, participantID uint, req *dto.CreateConsultationRequest) (*dto.CreateConsultationResponse, error)
+	GetConsultations(ctx context.Context, userID uint) ([]dto.ConsultationResponse, error)
+	GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error)
+	SendMessage(ctx context.Context, conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error)
+	GetMessages(ctx context.Context, conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error)
+	MarkMessageRead(ctx context.Context, conversationID uuid.UUID, userID uint, req *dto.MarkMessageReadRequest) (*dto.MessageResponse, error)
+	ApproveConsultation(ctx context.Context, conversationID uuid.UUID, psychologistID uint) error
+	CloseConsultation(ctx context.Context, conversationID uuid.UUID, userID uint) (*dto.CloseConsultationResponse, error)
 }
 
 type consultationService struct {
@@ -27,13 +29,38 @@ func NewConsultationService(repo repository.ConsultationRepository) Consultation
 	return &consultationService{repo: repo}
 }
 
-func (s *consultationService) CreateConsultation(participantID uint, req *dto.CreateConsultationRequest) (*dto.CreateConsultationResponse, error) {
+func (s *consultationService) ValidateConsultation(ctx context.Context, id uuid.UUID, userID uint) (bool, error) {
+	conversation, err := s.repo.GetConversationByID(ctx, id)
+	if err != nil {
+		return false, err
+	}
+	if conversation.Status != entity.StatusActive {
+		return false, errors.New("sesi konsultasi ini sudah berakhir")
+	}
+	if conversation.ParticipantID != userID && conversation.PsychologistID != userID {
+		return false, errors.New("anda tidak memiliki akses ke sesi konsultasi ini")
+	}
+	return true, nil
+}
+
+func (s *consultationService) CreateConsultation(ctx context.Context, participantID uint, req *dto.CreateConsultationRequest) (*dto.CreateConsultationResponse, error) {
+	exists, err := s.repo.ExistsActiveConsultation(ctx, participantID)
+	if err != nil {
+		return nil, err
+	}
+
+	if exists {
+		return nil, errors.New("you have an active consultation")
+	}
+
 	conv := &entity.Conversation{
+		ID:             uuid.New(),
 		ParticipantID:  participantID,
 		PsychologistID: req.PsychologistID,
 		Status:         entity.StatusWaiting,
 	}
-	if err := s.repo.CreateConversation(conv); err != nil {
+
+	if err := s.repo.CreateConversation(ctx, conv); err != nil {
 		return nil, err
 	}
 
@@ -43,8 +70,8 @@ func (s *consultationService) CreateConsultation(participantID uint, req *dto.Cr
 	}, nil
 }
 
-func (s *consultationService) GetConsultations(userID uint) ([]dto.ConsultationResponse, error) {
-	convs, err := s.repo.GetConversations(userID)
+func (s *consultationService) GetConsultations(ctx context.Context, userID uint) ([]dto.ConsultationResponse, error) {
+	convs, err := s.repo.GetConversations(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,8 +90,8 @@ func (s *consultationService) GetConsultations(userID uint) ([]dto.ConsultationR
 	return responses, nil
 }
 
-func (s *consultationService) GetConsultationByID(id uuid.UUID, userID uint) (*dto.ConsultationResponse, error) {
-	c, err := s.repo.GetConversationByID(id)
+func (s *consultationService) GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error) {
+	c, err := s.repo.GetConversationByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -82,8 +109,10 @@ func (s *consultationService) GetConsultationByID(id uuid.UUID, userID uint) (*d
 	}, nil
 }
 
-func (s *consultationService) SendMessage(conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error) {
-	c, err := s.repo.GetConversationByID(conversationID)
+
+
+func (s *consultationService) SendMessage(ctx context.Context, conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error) {
+	c, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
 		return nil, err
 	}
@@ -92,13 +121,14 @@ func (s *consultationService) SendMessage(conversationID uuid.UUID, senderID uin
 	}
 
 	msg := &entity.Message{
+		ID:             uuid.New(),
 		ConversationID: conversationID,
 		SenderID:       senderID,
 		MessageType:    req.MessageType,
 		Message:        req.Message,
 	}
 
-	if err := s.repo.CreateMessage(msg); err != nil {
+	if err := s.repo.CreateMessage(ctx, msg); err != nil {
 		return nil, err
 	}
 
@@ -112,8 +142,8 @@ func (s *consultationService) SendMessage(conversationID uuid.UUID, senderID uin
 	}, nil
 }
 
-func (s *consultationService) GetMessages(conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error) {
-	c, err := s.repo.GetConversationByID(conversationID)
+func (s *consultationService) GetMessages(ctx context.Context, conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error) {
+	c, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +151,7 @@ func (s *consultationService) GetMessages(conversationID uuid.UUID, userID uint,
 		return nil, errors.New("unauthorized to view messages in this conversation")
 	}
 
-	msgs, err := s.repo.GetMessages(conversationID, cursor, limit)
+	msgs, err := s.repo.GetMessages(ctx, conversationID, cursor, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +170,8 @@ func (s *consultationService) GetMessages(conversationID uuid.UUID, userID uint,
 	return responses, nil
 }
 
-func (s *consultationService) MarkMessageRead(conversationID uuid.UUID, userID uint, req *dto.MarkMessageReadRequest) (*dto.MessageResponse, error) {
-	msg, err := s.repo.GetMessageByID(req.MessageID)
+func (s *consultationService) MarkMessageRead(ctx context.Context, conversationID uuid.UUID, userID uint, req *dto.MarkMessageReadRequest) (*dto.MessageResponse, error) {
+	msg, err := s.repo.GetMessageByID(ctx, req.MessageID)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +185,7 @@ func (s *consultationService) MarkMessageRead(conversationID uuid.UUID, userID u
 		UserID:    userID,
 	}
 
-	if err := s.repo.MarkMessageAsRead(read); err != nil {
+	if err := s.repo.MarkMessageAsRead(ctx, read); err != nil {
 		return nil, err
 	}
 
@@ -169,17 +199,29 @@ func (s *consultationService) MarkMessageRead(conversationID uuid.UUID, userID u
 	}, nil
 }
 
-func (s *consultationService) CloseConsultation(conversationID uuid.UUID, userID uint, req *dto.CloseConsultationRequest) (*dto.CloseConsultationResponse, error) {
-	c, err := s.repo.GetConversationByID(conversationID)
+func (s *consultationService) ApproveConsultation(ctx context.Context, conversationID uuid.UUID, psychologistID uint) error {
+	c, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if c.ParticipantID != userID && c.PsychologistID != userID {
-		return nil, errors.New("unauthorized to close this conversation")
+	if c.PsychologistID != psychologistID {
+		return errors.New("unauthorized to approve this conversation")
 	}
 
-	if err := s.repo.UpdateConversationStatus(conversationID, entity.StatusClosed); err != nil {
+	if c.Status != entity.StatusWaiting {
+		return errors.New("conversation is already active or closed")
+	}
+
+	if err := s.repo.UpdateConversationStatus(ctx, conversationID, entity.StatusActive); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *consultationService) CloseConsultation(ctx context.Context, conversationID uuid.UUID, userID uint) (*dto.CloseConsultationResponse, error) {
+	if err := s.repo.UpdateConversationStatus(ctx, conversationID, entity.StatusClosed); err != nil {
 		return nil, err
 	}
 

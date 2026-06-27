@@ -94,7 +94,7 @@ func JWTMiddleware(jwtManager *jwt.JWTManager) gin.HandlerFunc {
 		principal := security.Principal{
 			UserID: claims.UserID,
 			Roles: claims.Roles,
-			// Permissions: claims.Permissions,
+			Permissions: claims.Permissions,
 		}
 
 		ctx := security.WithPrincipal(c.Request.Context(), principal)

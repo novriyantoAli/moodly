@@ -1,23 +1,20 @@
-buatkan saya dokumen untuk:
- project brief, 
- go / no-go project
- high level scope
+buatkan saya issue.md berisi perencanaan untuk nanti di  implementasikan oleh junior programer atau AI model yang lebih murah
 
-dengan pertanyaan dan jawaban sebagai berikut
+isi dari planningnya adalah sebagai berikut:
 
-1. apa bisnis perusahaan ?
- - jawaban: Akademi atau Pusat Pembinaan Olahraga
+pada fitur conversation send message
 
-2. produk atau layanan utama ?
- - jawaban: 1. Program Pelatihan Atlet
-            2. Program Pengembangan Prestasi
+ketika user mengirim pesan
 
-3. siapa target pengguna ?
- - jawaban: atlit, pelatih dan psikolog
+1. lakukan validasi apakah conversetion valid dan tidak waiting atau closed
+2. lakukan validasi apakah sender id adalah participant atau psikolog yang menjadi partner dalam conversetion tersebut
+3. jika melakukan join tabel pastikan participan dan psikologi id itu mereference ke tabel user, karena psikolog dan participan adalah id user
+4. lakukan validasi apakah sender id merupakan user yang aktif
+5. dan buatkan satu method lagi pada conversation untuk menyetujui conversation dan ini hanya boleh di akses oleh psikolog
+6. dan buatkan lagi satu method pada conversation untuk menutup session, ini bisa dilakukan oleh psikolog atau atlit dan lakukan validasi hanya conversation dengan status active yang boleh di tutup
 
-4. apa masalah terbesar saat ini
- - jawaban: atlit sering mengalami penurunan motivasi, kelelahan mental dan stres
- - jawaban: belum ada sistem terpusat untuk monitoring kesehatan mental dan performa atlit
- 
-5. dampak masalah tersebut terhadap bisnis
- - jawaban: 
+gunakan usecase sebagai layer aggregator service, dan lakukan validasi pada masing-masing service sesuai dengan bisnis logic
+
+jangan membuat database ataupun mengedit tabel, jika terdapat perubahan cukup ubah saja pada entity
+
+jelaskan tahap-tahap yang harus dilakukan untuk mengimplementasikan fitur ini, anggap nanti yang mengimplementasikan adalah junior programer atau AI model yang lebih murah

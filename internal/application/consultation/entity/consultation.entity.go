@@ -27,7 +27,7 @@ const (
 
 type Conversation struct {
 	ID             uuid.UUID          `gorm:"primaryKey;type:uuid"`
-	ParticipantID  uint               `gorm:"not null"`
+	ParticipantID  uint               `gorm:"not null;uniqueIndex:uq_active_consultation,where:status = 'WAITING' OR status = 'ACTIVE'"`
 	Participant    userEntity.User    `gorm:"foreignKey:ParticipantID"`
 	PsychologistID uint               `gorm:"not null"`
 	Psychologist   userEntity.User    `gorm:"foreignKey:PsychologistID"`
