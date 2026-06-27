@@ -119,7 +119,7 @@ func NewOAuthService(config OAuthConfig, logger *zap.Logger, userRepo userRepo.U
 // GetAuthorizationURL generates the OAuth authorization URL
 func (s *oauthService) GetAuthorizationURL(ctx context.Context, provider dto.OAuthProvider, redirectURI string) (*dto.OAuthAuthorizationURLResponse, error) {
 	// Generate state as a JWT token for security verification
-	state, err := s.jwtManager.GenerateToken(0, "", "oauth_state", nil)
+	state, err := s.jwtManager.GenerateToken(0, "", []string{"oauth_state"}, nil)
 	if err != nil {
 		s.logger.Error("Failed to generate state token", zap.Error(err))
 		return nil, err
@@ -266,8 +266,15 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 		return nil, fmt.Errorf("invalid or expired state token: %w", err)
 	}
 
-	// Verify state token was generated for oauth flow (Level = "oauth_state")
-	if claims.Level != "oauth_state" {
+	// Verify state token was generated for oauth flow
+	hasStateRole := false
+	for _, r := range claims.Roles {
+		if r == "oauth_state" {
+			hasStateRole = true
+			break
+		}
+	}
+	if !hasStateRole {
 		return nil, errors.New("invalid state token: not an OAuth state token")
 	}
 
@@ -315,8 +322,8 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 	accessToken, err := s.jwtManager.GenerateToken(
 		user.ID,
 		user.Email,
-		user.Level,
 		roleNames,
+		permissions,
 	)
 	if err != nil {
 		s.logger.Error("Failed to generate JWT token", zap.Error(err))
@@ -327,8 +334,8 @@ func (s *oauthService) Authenticate(ctx context.Context, provider dto.OAuthProvi
 	refreshToken, err := s.jwtManager.GenerateRefreshToken(
 		user.ID,
 		user.Email,
-		user.Level,
 		roleNames,
+		permissions,
 	)
 	if err != nil {
 		s.logger.Error("Failed to generate refresh token", zap.Error(err))

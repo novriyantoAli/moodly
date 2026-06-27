@@ -12,3 +12,6 @@ config.yaml
 
 # OS files
 .DS_Store
+
+prompt-wajib.txt
+prompt.txt

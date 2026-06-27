@@ -5,8 +5,8 @@ import (
 )
 
 type TokenService interface {
-	GenerateToken(userID uint, email, level string, roles []string) (string, error)
-	GenerateRefreshToken(userID uint, email, level string, roles []string) (string, error)
+	GenerateToken(userID uint, email string, roles []string, permissions []string) (string, error)
+	GenerateRefreshToken(userID uint, email string, roles []string, permissions []string) (string, error)
 	ValidateToken(token string) (*jwt.Claims, error)
 	ValidateRefreshToken(token string) (*jwt.Claims, error)
 }

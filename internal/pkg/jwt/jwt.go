@@ -22,9 +22,8 @@ type JWTConfig struct {
 type Claims struct {
 	UserID uint     `json:"user_id"`
 	Email  string   `json:"email"`
-	Level  string   `json:"level"`
-	Roles  []string `json:"roles"`
-	Permission []string `json:"permissions"`
+	Roles       []string `json:"roles"`
+	Permissions []string `json:"permissions"`
 	gojwt.RegisteredClaims
 }
 
@@ -52,15 +51,14 @@ func NewJWTManagerWithRedis(cfg *config.Config, redisClient *redis.Client) *JWTM
 	}
 }
 
-// GenerateToken generates a new JWT token for a given user id, email, level and roles
-func (m *JWTManager) GenerateToken(userID uint, email, level string, roles []string) (string, error) {
+func (m *JWTManager) GenerateToken(userID uint, email string, roles []string, permissions []string) (string, error) {
 	expirationTime := time.Now().UTC().Add(m.config.Expiry)
 
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,
-		Level:  level,
 		Roles:  roles,
+		Permissions: permissions,
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(expirationTime),
 			IssuedAt:  gojwt.NewNumericDate(time.Now()),
@@ -77,15 +75,14 @@ func (m *JWTManager) GenerateToken(userID uint, email, level string, roles []str
 	return tokenString, nil
 }
 
-// GenerateRefreshToken generates a new refresh token for a given user id, email, level and roles
-func (m *JWTManager) GenerateRefreshToken(userID uint, email, level string, roles []string) (string, error) {
+func (m *JWTManager) GenerateRefreshToken(userID uint, email string, roles []string, permissions []string) (string, error) {
 	expirationTime := time.Now().UTC().Add(7 * 24 * time.Hour)
 
 	claims := &Claims{
 		UserID: userID,
 		Email:  email,
-		Level:  level,
 		Roles:  roles,
+		Permissions: permissions,
 		RegisteredClaims: gojwt.RegisteredClaims{
 			ExpiresAt: gojwt.NewNumericDate(expirationTime),
 			IssuedAt:  gojwt.NewNumericDate(time.Now()),

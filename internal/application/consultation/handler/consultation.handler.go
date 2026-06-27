@@ -38,12 +38,42 @@ func (h *ConsultationHandler) RegisterRoutes(api *gin.RouterGroup) {
 			h.CreateConsultation,
 		)
 
-		consultations.GET("", h.GetConsultations)
-		consultations.GET("/:id", h.GetConsultationByID)
-		consultations.POST("/:id/messages", h.SendMessage)
-		consultations.GET("/:id/messages", h.GetMessages)
+		consultations.GET(
+			"",
+			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger), 
+			h.GetConsultations,
+		)
+		consultations.GET(
+			"/:id",
+			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger),
+			h.GetConsultationByID,
+		)
+		consultations.PATCH(
+			"/:id/approve",
+			middleware.RequireRoles([]string{"psikolog"}, h.logger),
+			middleware.RequirePermission(
+				h.authSvc,
+				"consultation.approve",
+				h.logger,
+			),
+			h.ApproveConsultation,
+		)
+		consultations.POST(
+			"/:id/messages",
+			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger), 
+			h.SendMessage,
+		)
+		consultations.GET(
+			"/:id/messages",
+			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger),  
+			h.GetMessages,
+		)
 		consultations.POST("/:id/read", h.MarkMessageRead)
-		consultations.PATCH("/:id", h.CloseConsultation)
+		consultations.PATCH(
+			"/:id/close",
+			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger),  
+			h.CloseConsultation,
+		)
 	}
 }
 
@@ -86,13 +116,13 @@ func getUserID(c *gin.Context) (uint, bool) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations [post]
 func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
-
-
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+
+	userID := principal.UserID
 
 	var req dto.CreateConsultationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -127,7 +157,7 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 		return
 	}
 
-	res, err := h.usecase.GetConsultations(principal.UserID)
+	res, err := h.usecase.GetConsultations(c.Request.Context(), principal.UserID)
 	if err != nil {
 		h.logger.Error("failed to get consultations", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -154,11 +184,13 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 // @Failure 404 {object} map[string]interface{} "Consultation not found"
 // @Router /consultations/{id} [get]
 func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+
+	userID := principal.UserID
 
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
@@ -167,7 +199,7 @@ func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
 		return
 	}
 
-	res, err := h.usecase.GetConsultationByID(id, userID)
+	res, err := h.usecase.GetConsultationByID(c.Request.Context(), id, userID)
 	if err != nil {
 		h.logger.Error("failed to get consultation", zap.Error(err))
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -191,11 +223,13 @@ func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations/{id}/messages [post]
 func (h *ConsultationHandler) SendMessage(c *gin.Context) {
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+
+	userID := principal.UserID
 
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
@@ -210,7 +244,7 @@ func (h *ConsultationHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	res, err := h.usecase.SendMessage(conversationID, userID, &req)
+	res, err := h.usecase.SendMessage(c.Request.Context(), conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to send message", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -235,11 +269,13 @@ func (h *ConsultationHandler) SendMessage(c *gin.Context) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations/{id}/messages [get]
 func (h *ConsultationHandler) GetMessages(c *gin.Context) {
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+
+	userID := principal.UserID
 
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
@@ -266,7 +302,7 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 		}
 	}
 
-	res, err := h.usecase.GetMessages(conversationID, userID, cursor, limit)
+	res, err := h.usecase.GetMessages(c.Request.Context(), conversationID, userID, cursor, limit)
 	if err != nil {
 		h.logger.Error("failed to get messages", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -294,11 +330,13 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations/{id}/read [post]
 func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+
+	userID := principal.UserID
 
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
@@ -313,7 +351,7 @@ func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
 		return
 	}
 
-	res, err := h.usecase.MarkMessageRead(conversationID, userID, &req)
+	res, err := h.usecase.MarkMessageRead(c.Request.Context(), conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to mark message as read", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -337,11 +375,13 @@ func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /consultations/{id} [patch]
 func (h *ConsultationHandler) CloseConsultation(c *gin.Context) {
-	userID, exists := getUserID(c)
-	if !exists {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+
+	userID := principal.UserID
 
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
@@ -350,13 +390,7 @@ func (h *ConsultationHandler) CloseConsultation(c *gin.Context) {
 		return
 	}
 
-	var req dto.CloseConsultationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	res, err := h.usecase.CloseConsultation(conversationID, userID, &req)
+	res, err := h.usecase.CloseConsultation(c.Request.Context(), conversationID, userID)
 	if err != nil {
 		h.logger.Error("failed to close consultation", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -364,4 +398,27 @@ func (h *ConsultationHandler) CloseConsultation(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, res)
+}
+
+func (h *ConsultationHandler) ApproveConsultation(c *gin.Context) {
+	principal, ok := security.PrincipalFromContext(c.Request.Context())
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		return
+	}	
+
+	idParam := c.Param("id")
+	conversationID, err := uuid.Parse(idParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id format"})
+		return
+	}
+
+	err = h.usecase.ApproveConsultation(c.Request.Context(), conversationID, principal.UserID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusAccepted)
 }
