@@ -12,7 +12,7 @@ import (
 type ConsultationService interface {
 	ValidateConsultation(ctx context.Context, id uuid.UUID, userID uint) (bool, error)
 	CreateConsultation(ctx context.Context, participantID uint, req *dto.CreateConsultationRequest) (*dto.CreateConsultationResponse, error)
-	GetConsultations(ctx context.Context, userID uint) ([]dto.ConsultationResponse, error)
+	GetConsultations(ctx context.Context, userID uint, limit int, page int, status string, search string) ([]dto.ConsultationResponse, int64, error)
 	GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error)
 	SendMessage(ctx context.Context, conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error)
 	GetMessages(ctx context.Context, conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error)
@@ -70,10 +70,11 @@ func (s *consultationService) CreateConsultation(ctx context.Context, participan
 	}, nil
 }
 
-func (s *consultationService) GetConsultations(ctx context.Context, userID uint) ([]dto.ConsultationResponse, error) {
-	convs, err := s.repo.GetConversations(ctx, userID)
+func (s *consultationService) GetConsultations(ctx context.Context, userID uint, limit int, page int, status string, search string) ([]dto.ConsultationResponse, int64, error) {
+	offset := (page - 1) * limit
+	convs, totalCount, err := s.repo.GetConversations(ctx, userID, limit, offset, status, search)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	var responses []dto.ConsultationResponse
@@ -85,9 +86,19 @@ func (s *consultationService) GetConsultations(ctx context.Context, userID uint)
 			StartedAt:      c.StartedAt,
 			ClosedAt:       c.ClosedAt,
 			CreatedAt:      c.CreatedAt,
+			Participant: dto.UserDetailResponse{
+				ID:    c.Participant.ID,
+				Name:  c.Participant.FullName,
+				Email: c.Participant.Email,
+			},
+			Psychologist: dto.UserDetailResponse{
+				ID:    c.Psychologist.ID,
+				Name:  c.Psychologist.FullName,
+				Email: c.Psychologist.Email,
+			},
 		})
 	}
-	return responses, nil
+	return responses, totalCount, nil
 }
 
 func (s *consultationService) GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error) {

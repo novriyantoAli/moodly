@@ -157,7 +157,26 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 		return
 	}
 
-	res, err := h.usecase.GetConsultations(c.Request.Context(), principal.UserID)
+	pageStr := c.Query("page")
+	limitStr := c.Query("limit")
+	status := c.Query("status")
+	search := c.Query("search")
+
+	page := 1
+	limit := 20
+
+	if pageStr != "" {
+		if p, err := strconv.Atoi(pageStr); err == nil && p > 0 {
+			page = p
+		}
+	}
+	if limitStr != "" {
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = l
+		}
+	}
+
+	res, totalCount, err := h.usecase.GetConsultations(c.Request.Context(), principal.UserID, limit, page, status, search)
 	if err != nil {
 		h.logger.Error("failed to get consultations", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -168,7 +187,19 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 		res = []dto.ConsultationResponse{}
 	}
 
-	c.JSON(http.StatusOK, res)
+	totalPages := 0
+	if limit > 0 {
+		totalPages = int((totalCount + int64(limit) - 1) / int64(limit))
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": res,
+		"meta": gin.H{
+			"total_data":   totalCount,
+			"total_pages":  totalPages,
+			"current_page": page,
+		},
+	})
 }
 
 // GetConsultationByID godoc

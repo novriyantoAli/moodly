@@ -13,7 +13,7 @@ import (
 
 type ConsultationUsecase interface {
 	CreateConsultation(ctx context.Context, participantID uint, req *dto.CreateConsultationRequest) (*dto.CreateConsultationResponse, error)
-	GetConsultations(ctx context.Context, userID uint) ([]dto.ConsultationResponse, error)
+	GetConsultations(ctx context.Context, userID uint, limit int, page int, status string, search string) ([]dto.ConsultationResponse, int64, error)
 	GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error)
 	SendMessage(ctx context.Context, conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error)
 	GetMessages(ctx context.Context, conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error)
@@ -59,8 +59,8 @@ func (u *consultationUsecase) CreateConsultation(ctx context.Context, participan
 	return u.consultationSvc.CreateConsultation(ctx, participantID, req)
 }
 
-func (u *consultationUsecase) GetConsultations(ctx context.Context, userID uint) ([]dto.ConsultationResponse, error) {
-	return u.consultationSvc.GetConsultations(ctx, userID)
+func (u *consultationUsecase) GetConsultations(ctx context.Context, userID uint, limit int, page int, status string, search string) ([]dto.ConsultationResponse, int64, error) {
+	return u.consultationSvc.GetConsultations(ctx, userID, limit, page, status, search)
 }
 
 func (u *consultationUsecase) GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error) {

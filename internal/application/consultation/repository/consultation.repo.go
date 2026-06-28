@@ -10,7 +10,7 @@ import (
 
 type ConsultationRepository interface {
 	CreateConversation(ctx context.Context, conversation *entity.Conversation) error
-	GetConversations(ctx context.Context, userID uint) ([]entity.Conversation, error)
+	GetConversations(ctx context.Context, userID uint, limit int, offset int, status string, search string) ([]entity.Conversation, int64, error)
 	GetConversationByID(ctx context.Context, id uuid.UUID) (*entity.Conversation, error)
 	UpdateConversationStatus(ctx context.Context, id uuid.UUID, status entity.ConsultationStatus) error
 	UpdateConversation(ctx context.Context, conversation *entity.Conversation) error
@@ -35,12 +35,34 @@ func (r *consultationRepository) CreateConversation(ctx context.Context, convers
 	return r.db.WithContext(ctx).Create(conversation).Error
 }
 
-func (r *consultationRepository) GetConversations(ctx context.Context, userID uint) ([]entity.Conversation, error) {
+func (r *consultationRepository) GetConversations(ctx context.Context, userID uint, limit int, offset int, status string, search string) ([]entity.Conversation, int64, error) {
 	var conversations []entity.Conversation
-	err := r.db.WithContext(ctx).Where("participant_id = ? OR psychologist_id = ?", userID, userID).
-		Order("updated_at DESC").
+	var totalCount int64
+
+	query := r.db.WithContext(ctx).Model(&entity.Conversation{}).
+		Where("conversations.participant_id = ? OR conversations.psychologist_id = ?", userID, userID)
+
+	if status != "" {
+		query = query.Where("conversations.status = ?", status)
+	}
+
+	if search != "" {
+		searchParam := "%" + search + "%"
+		query = query.Joins("JOIN users AS p ON p.id = conversations.participant_id").
+			Joins("JOIN users AS psy ON psy.id = conversations.psychologist_id").
+			Where("p.full_name ILIKE ? OR psy.full_name ILIKE ?", searchParam, searchParam)
+	}
+
+	if err := query.Count(&totalCount).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := query.Preload("Participant").Preload("Psychologist").
+		Order("conversations.updated_at DESC").
+		Limit(limit).Offset(offset).
 		Find(&conversations).Error
-	return conversations, err
+
+	return conversations, totalCount, err
 }
 
 func (r *consultationRepository) GetConversationByID(ctx context.Context, id uuid.UUID) (*entity.Conversation, error) {

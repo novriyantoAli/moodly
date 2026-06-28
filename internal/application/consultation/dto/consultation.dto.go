@@ -16,6 +16,12 @@ type CreateConsultationResponse struct {
 	Status         entity.ConsultationStatus `json:"status"`
 }
 
+type UserDetailResponse struct {
+	ID    uint   `json:"id"`
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type ConsultationResponse struct {
 	ConversationID uuid.UUID                 `json:"conversation_id"`
 	PsychologistID uint                      `json:"psychologist_id"`
@@ -23,6 +29,8 @@ type ConsultationResponse struct {
 	StartedAt      *time.Time                `json:"started_at"`
 	ClosedAt       *time.Time                `json:"closed_at"`
 	CreatedAt      time.Time                 `json:"created_at"`
+	Participant    UserDetailResponse        `json:"participant"`
+	Psychologist   UserDetailResponse        `json:"psychologist"`
 }
 
 type SendMessageRequest struct {
