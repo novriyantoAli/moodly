@@ -25,6 +25,7 @@ type UserDetailResponse struct {
 type ConsultationResponse struct {
 	ConversationID uuid.UUID                 `json:"conversation_id"`
 	PsychologistID uint                      `json:"psychologist_id"`
+	ParticipantID  uint                      `json:"participant_id"`
 	Status         entity.ConsultationStatus `json:"status"`
 	StartedAt      *time.Time                `json:"started_at"`
 	ClosedAt       *time.Time                `json:"closed_at"`
@@ -42,6 +43,7 @@ type MessageResponse struct {
 	MessageID      uuid.UUID          `json:"message_id"`
 	ConversationID uuid.UUID          `json:"conversation_id"`
 	SenderID       uint               `json:"sender_id"`
+	Sender         UserDetailResponse `json:"sender"`
 	MessageType    entity.MessageType `json:"message_type"`
 	Message        string             `json:"message"`
 	CreatedAt      time.Time          `json:"created_at"`

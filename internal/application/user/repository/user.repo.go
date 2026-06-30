@@ -19,6 +19,7 @@ type UserRepository interface {
 	Update(ctx context.Context, user *entity.User) error
 	Delete(ctx context.Context, id uint) error
 	EmailExists(ctx context.Context, email string) (bool, error)
+	GetUsersByRoleName(ctx context.Context, roleName string, filter *dto.UserFilter) ([]entity.User, int64, error)
 }
 
 type userRepository struct {
@@ -105,4 +106,41 @@ func (r *userRepository) EmailExists(ctx context.Context, email string) (bool, e
 	db := database.GetDB(ctx, r.db)
 	err := db.Model(&entity.User{}).Where("email = ?", email).Count(&count).Error
 	return count > 0, err
+}
+
+func (r *userRepository) GetUsersByRoleName(ctx context.Context, roleName string, filter *dto.UserFilter) ([]entity.User, int64, error) {
+	var users []entity.User
+	var totalCount int64
+
+	db := database.GetDB(ctx, r.db)
+	query := db.Model(&entity.User{}).
+		Joins("JOIN user_roles ON users.id = user_roles.user_id").
+		Joins("JOIN roles ON roles.id = user_roles.role_id").
+		Where("roles.name = ?", roleName)
+
+	if filter.Email != "" {
+		query = query.Where("users.email LIKE ?", "%"+filter.Email+"%")
+	}
+	if filter.Name != "" {
+		query = query.Where("users.full_name LIKE ?", "%"+filter.Name+"%")
+	}
+
+	err := query.Count(&totalCount).Error
+	if err != nil {
+		r.logger.Error("Failed to count users by role", zap.String("role", roleName), zap.Error(err))
+		return nil, 0, err
+	}
+
+	if filter.Page > 0 && filter.PageSize > 0 {
+		offset := (filter.Page - 1) * filter.PageSize
+		query = query.Offset(offset).Limit(filter.PageSize)
+	}
+
+	err = query.Find(&users).Error
+	if err != nil {
+		r.logger.Error("Failed to get users by role", zap.String("role", roleName), zap.Error(err))
+		return nil, 0, err
+	}
+
+	return users, totalCount, nil
 }

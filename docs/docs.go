@@ -2351,6 +2351,114 @@ const docTemplate = `{
                 }
             }
         },
+        "/users/psikolog": {
+            "get": {
+                "description": "Get a list of users with \"psikolog\" role, with optional filtering and pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get all psikolog users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by name",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by email",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of items per page",
+                        "name": "page_size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of psikolog users",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_user_dto.UserListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/users/user": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get currently active user details based on JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Get active user info",
+                "responses": {
+                    "200": {
+                        "description": "User details",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/users/{id}": {
             "get": {
                 "description": "Get a single user by their ID",
@@ -2466,28 +2574,18 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a user by ID\nDelete a user by ID",
+                "description": "Delete a user by ID",
                 "consumes": [
-                    "application/json",
                     "application/json"
                 ],
                 "produces": [
-                    "application/json",
                     "application/json"
                 ],
                 "tags": [
-                    "users",
                     "users"
                 ],
                 "summary": "Delete a user",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "type": "integer",
                         "description": "User ID",
@@ -2669,6 +2767,15 @@ const docTemplate = `{
                 "created_at": {
                     "type": "string"
                 },
+                "participant": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.UserDetailResponse"
+                },
+                "participant_id": {
+                    "type": "integer"
+                },
+                "psychologist": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.UserDetailResponse"
+                },
                 "psychologist_id": {
                     "type": "integer"
                 },
@@ -2731,6 +2838,9 @@ const docTemplate = `{
                 "message_type": {
                     "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType"
                 },
+                "sender": {
+                    "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_dto.UserDetailResponse"
+                },
                 "sender_id": {
                     "type": "integer"
                 }
@@ -2758,6 +2868,20 @@ const docTemplate = `{
                             "$ref": "#/definitions/github_com_novriyantoAli_moodly_internal_application_consultation_entity.MessageType"
                         }
                     ]
+                }
+            }
+        },
+        "github_com_novriyantoAli_moodly_internal_application_consultation_dto.UserDetailResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

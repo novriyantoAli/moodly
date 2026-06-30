@@ -6,6 +6,7 @@ import (
 
 	"github.com/novriyantoAli/moodly/internal/application/user/dto"
 	"github.com/novriyantoAli/moodly/internal/application/user/service"
+	"github.com/novriyantoAli/moodly/internal/middleware"
 	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
 
 	"github.com/gin-gonic/gin"
@@ -153,6 +154,38 @@ func (h *UserHandler) GetUsers(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, users)
 }
 
+// GetPsikologList godoc
+// @Summary Get all psikolog users
+// @Description Get a list of users with "psikolog" role, with optional filtering and pagination
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param name query string false "Filter by name"
+// @Param email query string false "Filter by email"
+// @Param page query int false "Page number" default(1)
+// @Param page_size query int false "Number of items per page" default(10)
+// @Success 200 {object} dto.UserListResponse "List of psikolog users"
+// @Failure 400 {object} map[string]interface{} "Invalid query parameters"
+// @Failure 500 {object} map[string]interface{} "Internal server error"
+// @Router /users/psikolog [get]
+func (h *UserHandler) GetPsikologList(ctx *gin.Context) {
+	var filter dto.UserFilter
+	if err := ctx.ShouldBindQuery(&filter); err != nil {
+		h.logger.Error("Invalid query parameters", zap.Error(err))
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	users, err := h.service.GetPsikologUsers(ctx.Request.Context(), &filter)
+	if err != nil {
+		h.logger.Error("Failed to get psikolog users", zap.Error(err))
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get psikolog users"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, users)
+}
+
 // UpdateUser godoc
 // @Summary Update a user
 // @Description Update a user's information by ID
@@ -212,18 +245,6 @@ func (h *UserHandler) UpdateUser(ctx *gin.Context) {
 // @Failure 404 {object} map[string]interface{} "User not found"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /users/{id} [delete]
-// DeleteUser godoc
-// @Summary Delete a user
-// @Description Delete a user by ID
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} map[string]interface{} "User deleted successfully"
-// @Failure 400 {object} map[string]interface{} "Invalid user ID"
-// @Failure 404 {object} map[string]interface{} "User not found"
-// @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /users/{id} [delete]
 func (h *UserHandler) DeleteUser(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
@@ -246,58 +267,19 @@ func (h *UserHandler) DeleteUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
 
-// Login godoc
-// @Summary User login
-// @Description Authenticate a user with email and password
-// @Tags authentication
-// @Accept json
-// @Produce json
-// @Param credentials body dto.LoginUserRequest true "Login credentials"
-// @Success 200 {object} map[string]interface{} "Login successful with user details"
-// @Failure 400 {object} map[string]interface{} "Invalid request body"
-// @Failure 401 {object} map[string]interface{} "Invalid email or password"
-// @Failure 403 {object} map[string]interface{} "User account is inactive"
-// @Failure 500 {object} map[string]interface{} "Internal server error"
-// @Router /auth/login [post]
-func (h *UserHandler) Login(ctx *gin.Context) {
-	var req dto.LoginUserRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		h.logger.Error("Invalid request body", zap.Error(err))
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	user, err := h.service.Login(ctx.Request.Context(), &req)
-	if err != nil {
-		h.logger.Error("Failed to login user", zap.String("email", req.Email), zap.Error(err))
-		if err.Error() == "invalid email or password" {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
-		if err.Error() == "user account is inactive" {
-			ctx.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login"})
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{"data": user})
-}
-
 func (h *UserHandler) RegisterRoutes(api *gin.RouterGroup) {
 	users := api.Group("/users")
 	{
 		users.POST("", h.CreateUser)
 		users.GET("", h.GetUsers)
 		users.GET("/user", h.GetActiveUser)
+		users.GET(
+			"/psikolog",
+			middleware.RequireRoles([]string{"atlit"}, h.logger),
+			h.GetPsikologList,
+		)
 		users.GET("/:id", h.GetUser)
 		users.PUT("/:id", h.UpdateUser)
 		users.DELETE("/:id", h.DeleteUser)
-	}
-
-	auth := api.Group("/auth")
-	{
-		auth.POST("/login", h.Login)
 	}
 }
