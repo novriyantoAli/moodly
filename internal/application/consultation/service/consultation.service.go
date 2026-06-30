@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+
 	"github.com/google/uuid"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/entity"
@@ -82,6 +83,7 @@ func (s *consultationService) GetConsultations(ctx context.Context, userID uint,
 		responses = append(responses, dto.ConsultationResponse{
 			ConversationID: c.ID,
 			PsychologistID: c.PsychologistID,
+			ParticipantID:  c.ParticipantID,
 			Status:         c.Status,
 			StartedAt:      c.StartedAt,
 			ClosedAt:       c.ClosedAt,
@@ -113,14 +115,13 @@ func (s *consultationService) GetConsultationByID(ctx context.Context, id uuid.U
 	return &dto.ConsultationResponse{
 		ConversationID: c.ID,
 		PsychologistID: c.PsychologistID,
+		ParticipantID:  c.ParticipantID,
 		Status:         c.Status,
 		StartedAt:      c.StartedAt,
 		ClosedAt:       c.ClosedAt,
 		CreatedAt:      c.CreatedAt,
 	}, nil
 }
-
-
 
 func (s *consultationService) SendMessage(ctx context.Context, conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error) {
 	c, err := s.repo.GetConversationByID(ctx, conversationID)
@@ -143,13 +144,23 @@ func (s *consultationService) SendMessage(ctx context.Context, conversationID uu
 		return nil, err
 	}
 
+	createdMsg, err := s.repo.GetMessageByID(ctx, msg.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.MessageResponse{
-		MessageID:      msg.ID,
-		ConversationID: msg.ConversationID,
-		SenderID:       msg.SenderID,
-		MessageType:    msg.MessageType,
-		Message:        msg.Message,
-		CreatedAt:      msg.CreatedAt,
+		MessageID:      createdMsg.ID,
+		ConversationID: createdMsg.ConversationID,
+		SenderID:       createdMsg.SenderID,
+		Sender: dto.UserDetailResponse{
+			ID:    createdMsg.Sender.ID,
+			Name:  createdMsg.Sender.FullName,
+			Email: createdMsg.Sender.Email,
+		},
+		MessageType: createdMsg.MessageType,
+		Message:     createdMsg.Message,
+		CreatedAt:   createdMsg.CreatedAt,
 	}, nil
 }
 
@@ -173,9 +184,14 @@ func (s *consultationService) GetMessages(ctx context.Context, conversationID uu
 			MessageID:      m.ID,
 			ConversationID: m.ConversationID,
 			SenderID:       m.SenderID,
-			MessageType:    m.MessageType,
-			Message:        m.Message,
-			CreatedAt:      m.CreatedAt,
+			Sender: dto.UserDetailResponse{
+				ID:    m.Sender.ID,
+				Name:  m.Sender.FullName,
+				Email: m.Sender.Email,
+			},
+			MessageType: m.MessageType,
+			Message:     m.Message,
+			CreatedAt:   m.CreatedAt,
 		})
 	}
 	return responses, nil
@@ -204,9 +220,14 @@ func (s *consultationService) MarkMessageRead(ctx context.Context, conversationI
 		MessageID:      msg.ID,
 		ConversationID: msg.ConversationID,
 		SenderID:       msg.SenderID,
-		MessageType:    msg.MessageType,
-		Message:        msg.Message,
-		CreatedAt:      msg.CreatedAt,
+		Sender: dto.UserDetailResponse{
+			ID:    msg.Sender.ID,
+			Name:  msg.Sender.FullName,
+			Email: msg.Sender.Email,
+		},
+		MessageType: msg.MessageType,
+		Message:     msg.Message,
+		CreatedAt:   msg.CreatedAt,
 	}, nil
 }
 

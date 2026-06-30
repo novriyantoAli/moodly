@@ -23,6 +23,7 @@ type UserService interface {
 	UpdateUser(ctx context.Context, id uint, req *dto.UpdateUserRequest) (*dto.UserResponse, error)
 	DeleteUser(ctx context.Context, id uint) error
 	Login(ctx context.Context, req *dto.LoginUserRequest) (*dto.LoginUserResponse, error)
+	GetPsikologUsers(ctx context.Context, filter *dto.UserFilter) (*dto.UserListResponse, error)
 }
 
 type userService struct {
@@ -123,6 +124,33 @@ func (s *userService) GetUsers(ctx context.Context, filter *dto.UserFilter) (*dt
 
 	users, totalCount, err := s.repo.GetAll(ctx, filter)
 	if err != nil {
+		return nil, err
+	}
+
+	responses := make([]dto.UserResponse, 0, len(users))
+	for _, user := range users {
+		responses = append(responses, *s.entityToResponse(&user))
+	}
+
+	return &dto.UserListResponse{
+		Data:       responses,
+		TotalCount: totalCount,
+		Page:       filter.Page,
+		PageSize:   filter.PageSize,
+	}, nil
+}
+
+func (s *userService) GetPsikologUsers(ctx context.Context, filter *dto.UserFilter) (*dto.UserListResponse, error) {
+	if filter.Page <= 0 {
+		filter.Page = 1
+	}
+	if filter.PageSize <= 0 {
+		filter.PageSize = 10
+	}
+
+	users, totalCount, err := s.repo.GetUsersByRoleName(ctx, "psikolog", filter)
+	if err != nil {
+		s.logger.Error("Failed to get psikolog users", zap.Error(err))
 		return nil, err
 	}
 

@@ -76,6 +76,20 @@ func (m *MockUserRepository) EmailExists(ctx context.Context, email string) (boo
 	return args.Bool(0), args.Error(1)
 }
 
+func (m *MockUserRepository) GetUsersByRoleName(ctx context.Context, roleName string, filter *userDto.UserFilter) ([]userEntity.User, int64, error) {
+	args := m.Called(ctx, roleName, filter)
+	var users []userEntity.User
+	if args.Get(0) != nil {
+		users = args.Get(0).([]userEntity.User)
+	}
+
+	var count int64
+	if args.Get(1) != nil {
+		count = args.Get(1).(int64)
+	}
+	return users, count, args.Error(2)
+}
+
 // MockPaymentRepository is a mock implementation of PaymentRepository
 type MockPaymentRepository struct {
 	mock.Mock
@@ -444,6 +458,14 @@ func (m *MockUserService) GetUserByEmail(ctx context.Context, email string) (*us
 }
 
 func (m *MockUserService) GetUsers(ctx context.Context, filter *userDto.UserFilter) (*userDto.UserListResponse, error) {
+	args := m.Called(ctx, filter)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*userDto.UserListResponse), args.Error(1)
+}
+
+func (m *MockUserService) GetPsikologUsers(ctx context.Context, filter *userDto.UserFilter) (*userDto.UserListResponse, error) {
 	args := m.Called(ctx, filter)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

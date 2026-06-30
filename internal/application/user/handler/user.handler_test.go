@@ -298,6 +298,81 @@ func TestUserHandler_GetUsers(t *testing.T) {
 	})
 }
 
+func TestUserHandler_GetPsikologList(t *testing.T) {
+	t.Run("should get psikolog users successfully", func(t *testing.T) {
+		// Setup
+		handler, mockService := setupUserHandler()
+
+		response := &dto.UserListResponse{
+			Data: []dto.UserResponse{
+				{ID: 1, FullName: "Psikolog 1", Email: "psikolog1@example.com"},
+			},
+			TotalCount: 1,
+			Page:       1,
+			PageSize:   10,
+		}
+
+		mockService.On("GetPsikologUsers", mock.MatchedBy(func(ctx context.Context) bool {
+			return true
+		}), mock.MatchedBy(func(f *dto.UserFilter) bool {
+			return true
+		})).Return(response, nil)
+
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest("GET", "/users/psikolog?page=1&page_size=10", nil)
+
+		// When
+		handler.GetPsikologList(ctx)
+
+		// Then
+		assert.Equal(t, http.StatusOK, w.Code)
+		mockService.AssertExpectations(t)
+
+		var result dto.UserListResponse
+		json.Unmarshal(w.Body.Bytes(), &result)
+		assert.Len(t, result.Data, 1)
+		assert.Equal(t, int64(1), result.TotalCount)
+	})
+
+	t.Run("should return bad request for invalid query parameters", func(t *testing.T) {
+		// Setup
+		handler, _ := setupUserHandler()
+
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest("GET", "/users/psikolog?page=invalid", nil)
+
+		// When
+		handler.GetPsikologList(ctx)
+
+		// Then
+		assert.Equal(t, http.StatusBadRequest, w.Code)
+	})
+
+	t.Run("should return internal server error when service fails", func(t *testing.T) {
+		// Setup
+		handler, mockService := setupUserHandler()
+
+		mockService.On("GetPsikologUsers", mock.MatchedBy(func(ctx context.Context) bool {
+			return true
+		}), mock.MatchedBy(func(f *dto.UserFilter) bool {
+			return true
+		})).Return(nil, errors.New("database error"))
+
+		w := httptest.NewRecorder()
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = httptest.NewRequest("GET", "/users/psikolog", nil)
+
+		// When
+		handler.GetPsikologList(ctx)
+
+		// Then
+		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		mockService.AssertExpectations(t)
+	})
+}
+
 func TestUserHandler_UpdateUser(t *testing.T) {
 	t.Run("should update user successfully", func(t *testing.T) {
 		// Setup
@@ -512,6 +587,8 @@ func TestUserHandler_RegisterRoutes(t *testing.T) {
 		expectedRoutes := []string{
 			"POST /api/v1/users",
 			"GET /api/v1/users",
+			"GET /api/v1/users/user",
+			"GET /api/v1/users/psikolog",
 			"GET /api/v1/users/:id",
 			"PUT /api/v1/users/:id",
 			"DELETE /api/v1/users/:id",

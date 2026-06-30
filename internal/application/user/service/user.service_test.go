@@ -374,3 +374,66 @@ func TestUserService_DeleteUser(t *testing.T) {
 		mockRepo.AssertExpectations(t)
 	})
 }
+
+func TestUserService_GetPsikologUsers(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("should get psikolog users with pagination", func(t *testing.T) {
+		// Setup
+		mockRepo := &testutil.MockUserRepository{}
+		logger := testutil.NewSilentLogger()
+		service := NewUserService(mockRepo, logger)
+
+		users := []entity.User{
+			{
+				ID:       1,
+				Email:    "psikolog1@example.com",
+				FullName: "Psikolog 1",
+				Level:    "user",
+				IsActive: true,
+			},
+		}
+
+		filter := &dto.UserFilter{
+			Page:     1,
+			PageSize: 10,
+		}
+
+		// Mock expectations
+		mockRepo.On("GetUsersByRoleName", ctx, "psikolog", filter).Return(users, int64(1), nil)
+
+		// When
+		response, err := service.GetPsikologUsers(ctx, filter)
+
+		// Then
+		assert.NoError(t, err)
+		assert.NotNil(t, response)
+		assert.Len(t, response.Data, 1)
+		assert.Equal(t, int64(1), response.TotalCount)
+		mockRepo.AssertExpectations(t)
+	})
+
+	t.Run("should return error when repository fails", func(t *testing.T) {
+		// Setup
+		mockRepo := &testutil.MockUserRepository{}
+		logger := testutil.NewSilentLogger()
+		service := NewUserService(mockRepo, logger)
+
+		filter := &dto.UserFilter{
+			Page:     1,
+			PageSize: 10,
+		}
+
+		// Mock expectations
+		mockRepo.On("GetUsersByRoleName", ctx, "psikolog", filter).Return(nil, int64(0), errors.New("database error"))
+
+		// When
+		response, err := service.GetPsikologUsers(ctx, filter)
+
+		// Then
+		assert.Error(t, err)
+		assert.Nil(t, response)
+		mockRepo.AssertExpectations(t)
+	})
+}
+

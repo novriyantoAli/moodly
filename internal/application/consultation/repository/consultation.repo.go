@@ -124,7 +124,7 @@ func (r *consultationRepository) CreateMessage(ctx context.Context, message *ent
 
 func (r *consultationRepository) GetMessageByID(ctx context.Context, id uuid.UUID) (*entity.Message, error) {
 	var message entity.Message
-	err := r.db.WithContext(ctx).First(&message, "id = ?", id).Error
+	err := r.db.WithContext(ctx).Preload("Sender").First(&message, "id = ?", id).Error
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (r *consultationRepository) GetMessageByID(ctx context.Context, id uuid.UUI
 
 func (r *consultationRepository) GetMessages(ctx context.Context, conversationID uuid.UUID, cursor uuid.UUID, limit int) ([]entity.Message, error) {
 	var messages []entity.Message
-	query := r.db.WithContext(ctx).Where("conversation_id = ?", conversationID).Order("created_at DESC")
+	query := r.db.WithContext(ctx).Preload("Sender").Where("conversation_id = ?", conversationID).Order("created_at DESC")
 
 	if cursor != uuid.Nil {
 		var cursorMessage entity.Message
