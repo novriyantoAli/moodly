@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/novriyantoAli/moodly/internal/application/auth/dto"
 	"github.com/novriyantoAli/moodly/internal/application/auth/usecase"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"github.com/novriyantoAli/moodly/internal/shared/response"
 	"go.uber.org/zap"
 )
 
@@ -30,43 +32,26 @@ func (h *LogoutHandler) Logout(c *gin.Context) {
 	var req dto.LogoutRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"success": false,
-				"message": "invalid request",
-			},
-		)
+		statusCode, resp := apperror.ToHTTP(err)
+		c.JSON(statusCode, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 
 		return
 	}
 
-	err := h.useCase.Execute(
-		c.Request.Context(),
-		&req,
-	)
-
+	err := h.useCase.Execute(c.Request.Context(), &req)
 	if err != nil {
-
-		c.JSON(
-			http.StatusUnauthorized,
-			gin.H{
-				"success": false,
-				"message": err.Error(),
-			},
-		)
-
+		statusCode, resp := apperror.ToHTTP(err)
+		c.JSON(statusCode, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"success": true,
-			"message": "logout success",
-		},
-	)
+	c.JSON(http.StatusOK, response.Success(nil))
 }
 
 func (h *LogoutHandler) RegisterRoutes(api *gin.RouterGroup) {

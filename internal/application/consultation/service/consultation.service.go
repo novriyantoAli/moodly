@@ -8,6 +8,8 @@ import (
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/entity"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/repository"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"gorm.io/gorm"
 )
 
 type ConsultationService interface {
@@ -51,7 +53,7 @@ func (s *consultationService) CreateConsultation(ctx context.Context, participan
 	}
 
 	if exists {
-		return nil, errors.New("you have an active consultation")
+		return nil, apperror.Conflict("Anda sudah memiliki sesi konsultasi aktif")
 	}
 
 	conv := &entity.Conversation{
@@ -106,10 +108,15 @@ func (s *consultationService) GetConsultations(ctx context.Context, userID uint,
 func (s *consultationService) GetConsultationByID(ctx context.Context, id uuid.UUID, userID uint) (*dto.ConsultationResponse, error) {
 	c, err := s.repo.GetConversationByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFound("Konsultasi tidak ditemukan")
+		}
+
 		return nil, err
 	}
+
 	if c.ParticipantID != userID && c.PsychologistID != userID {
-		return nil, errors.New("unauthorized access to conversation")
+		return nil, apperror.Forbidden("Anda tidak memiliki akses ke sesi konsultasi ini")
 	}
 
 	return &dto.ConsultationResponse{
@@ -126,10 +133,19 @@ func (s *consultationService) GetConsultationByID(ctx context.Context, id uuid.U
 func (s *consultationService) SendMessage(ctx context.Context, conversationID uuid.UUID, senderID uint, req *dto.SendMessageRequest) (*dto.MessageResponse, error) {
 	c, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFound("Konsultasi tidak ditemukan")
+		}
+
 		return nil, err
 	}
+
 	if c.ParticipantID != senderID && c.PsychologistID != senderID {
-		return nil, errors.New("unauthorized to send message in this conversation")
+		return nil, apperror.Forbidden("Anda tidak memiliki akses ke sesi konsultasi ini")
+	}
+
+	if c.Status != entity.StatusActive && c.Status != entity.StatusWaiting {
+		return nil, apperror.BadRequest("Anda tidak dapat mengirim pesan ke sesi konsultasi yang sudah berakhir")
 	}
 
 	msg := &entity.Message{
@@ -144,33 +160,33 @@ func (s *consultationService) SendMessage(ctx context.Context, conversationID uu
 		return nil, err
 	}
 
-	createdMsg, err := s.repo.GetMessageByID(ctx, msg.ID)
-	if err != nil {
-		return nil, err
-	}
-
 	return &dto.MessageResponse{
-		MessageID:      createdMsg.ID,
-		ConversationID: createdMsg.ConversationID,
-		SenderID:       createdMsg.SenderID,
+		MessageID:      msg.ID,
+		ConversationID: msg.ConversationID,
+		SenderID:       msg.SenderID,
 		Sender: dto.UserDetailResponse{
-			ID:    createdMsg.Sender.ID,
-			Name:  createdMsg.Sender.FullName,
-			Email: createdMsg.Sender.Email,
+			ID:    msg.Sender.ID,
+			Name:  msg.Sender.FullName,
+			Email: msg.Sender.Email,
 		},
-		MessageType: createdMsg.MessageType,
-		Message:     createdMsg.Message,
-		CreatedAt:   createdMsg.CreatedAt,
+		MessageType: msg.MessageType,
+		Message:     msg.Message,
+		CreatedAt:   msg.CreatedAt,
 	}, nil
 }
 
 func (s *consultationService) GetMessages(ctx context.Context, conversationID uuid.UUID, userID uint, cursor uuid.UUID, limit int) ([]dto.MessageResponse, error) {
 	c, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFound("Konsultasi tidak ditemukan")
+		}
+
 		return nil, err
 	}
+
 	if c.ParticipantID != userID && c.PsychologistID != userID {
-		return nil, errors.New("unauthorized to view messages in this conversation")
+		return nil, apperror.Forbidden("Anda tidak memiliki akses ke sesi konsultasi ini")
 	}
 
 	msgs, err := s.repo.GetMessages(ctx, conversationID, cursor, limit)
@@ -200,11 +216,15 @@ func (s *consultationService) GetMessages(ctx context.Context, conversationID uu
 func (s *consultationService) MarkMessageRead(ctx context.Context, conversationID uuid.UUID, userID uint, req *dto.MarkMessageReadRequest) (*dto.MessageResponse, error) {
 	msg, err := s.repo.GetMessageByID(ctx, req.MessageID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFound("Pesan tidak ditemukan")
+		}
+
 		return nil, err
 	}
 
 	if msg.ConversationID != conversationID {
-		return nil, errors.New("message does not belong to conversation")
+		return nil, apperror.Forbidden("Anda tidak memiliki akses ke sesi konsultasi ini")
 	}
 
 	read := &entity.MessageRead{
@@ -234,15 +254,18 @@ func (s *consultationService) MarkMessageRead(ctx context.Context, conversationI
 func (s *consultationService) ApproveConsultation(ctx context.Context, conversationID uuid.UUID, psychologistID uint) error {
 	c, err := s.repo.GetConversationByID(ctx, conversationID)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return apperror.NotFound("Konsultasi tidak ditemukan")
+		}
 		return err
 	}
 
 	if c.PsychologistID != psychologistID {
-		return errors.New("unauthorized to approve this conversation")
+		return apperror.Forbidden("Anda tidak memiliki akses untuk menyetujui sesi konsultasi ini")
 	}
 
 	if c.Status != entity.StatusWaiting {
-		return errors.New("conversation is already active or closed")
+		return apperror.BadRequest("Sesi konsultasi ini sudah aktif atau berakhir")
 	}
 
 	if err := s.repo.UpdateConversationStatus(ctx, conversationID, entity.StatusActive); err != nil {
@@ -253,6 +276,23 @@ func (s *consultationService) ApproveConsultation(ctx context.Context, conversat
 }
 
 func (s *consultationService) CloseConsultation(ctx context.Context, conversationID uuid.UUID, userID uint) (*dto.CloseConsultationResponse, error) {
+	c, err := s.repo.GetConversationByID(ctx, conversationID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, apperror.NotFound("Konsultasi tidak ditemukan")
+		}
+
+		return nil, err
+	}
+
+	if c.ParticipantID != userID && c.PsychologistID != userID {
+		return nil, apperror.Forbidden("Anda tidak memiliki akses untuk menutup sesi konsultasi ini")
+	}
+
+	if c.Status != entity.StatusActive {
+		return nil, apperror.BadRequest("Sesi konsultasi ini tidak aktif")
+	}
+
 	if err := s.repo.UpdateConversationStatus(ctx, conversationID, entity.StatusClosed); err != nil {
 		return nil, err
 	}

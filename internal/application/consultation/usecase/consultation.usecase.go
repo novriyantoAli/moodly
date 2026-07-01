@@ -2,13 +2,13 @@ package usecase
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 	authService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/service"
 	userService "github.com/novriyantoAli/moodly/internal/application/user/service"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
 )
 
 type ConsultationUsecase interface {
@@ -48,11 +48,11 @@ func (u *consultationUsecase) CreateConsultation(ctx context.Context, participan
 
 	isPsychologist, err := u.authSvc.IsPsychologist(ctx, user.ID)
 	if err != nil {
-		return nil, errors.New("gagal memvalidasi role psikolog")
+		return nil, err
 	}
 
 	if !isPsychologist {
-		return nil, errors.New("pengguna yang dipilih bukan psikolog")
+		return nil, apperror.Forbidden("Anda tidak memiliki akses untuk membuat sesi konsultasi")
 	}
 
 	// 3. Create consultation using ConsultationService
@@ -79,7 +79,7 @@ func (u *consultationUsecase) SendMessage(ctx context.Context, conversationID uu
 	}
 
 	if !valid {
-		return nil, errors.New("anda tidak memiliki akses ke sesi konsultasi ini")
+		return nil, apperror.Forbidden("Anda tidak memiliki akses untuk mengirim pesan ke sesi konsultasi ini")
 	}
 
 	return u.consultationSvc.SendMessage(ctx, conversationID, user.ID, req)
@@ -99,7 +99,7 @@ func (u *consultationUsecase) CloseConsultation(ctx context.Context, conversatio
 		return nil, err
 	}
 	if !isVal {
-		return nil, errors.New("anda tidak memiliki sesi konsultasi yang aktif")
+		return nil, apperror.Forbidden("Anda tidak memiliki sesi konsultasi yang aktif")
 	}
 
 	return u.consultationSvc.CloseConsultation(ctx, conversationID, userID)
@@ -108,15 +108,15 @@ func (u *consultationUsecase) CloseConsultation(ctx context.Context, conversatio
 func (u *consultationUsecase) ApproveConsultation(ctx context.Context, conversationID uuid.UUID, psychologistID uint) error {
 	user, err := u.userSvc.ValidateUser(ctx, psychologistID)
 	if err != nil {
-		return errors.New("psikolog tidak ditemukan")
+		return err
 	}
 
 	isPsychologist, err := u.authSvc.IsPsychologist(ctx, user.ID)
 	if err != nil {
-		return errors.New("gagal memvalidasi role psikolog")
+		return err
 	}
 	if !isPsychologist {
-		return errors.New("pengguna yang menyetujui sesi bukan psikolog")
+		return apperror.Forbidden("pengguna yang menyetujui sesi bukan psikolog")
 	}
 
 	return u.consultationSvc.ApproveConsultation(ctx, conversationID, psychologistID)
