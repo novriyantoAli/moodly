@@ -6,11 +6,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	securityService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/dto"
 	"github.com/novriyantoAli/moodly/internal/application/consultation/usecase"
-	securityService "github.com/novriyantoAli/moodly/internal/application/authorization/service"
 	"github.com/novriyantoAli/moodly/internal/middleware"
 	"github.com/novriyantoAli/moodly/internal/security"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"github.com/novriyantoAli/moodly/internal/shared/response"
 	"go.uber.org/zap"
 )
 
@@ -40,12 +42,12 @@ func (h *ConsultationHandler) RegisterRoutes(api *gin.RouterGroup) {
 
 		consultations.GET(
 			"",
-			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger), 
+			middleware.RequireRoles([]string{"psikolog", "atlit"}, h.logger),
 			h.GetConsultations,
 		)
 		consultations.GET(
 			"/:id",
-			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger),
+			middleware.RequireRoles([]string{"psikolog", "atlit"}, h.logger),
 			h.GetConsultationByID,
 		)
 		consultations.PATCH(
@@ -60,47 +62,21 @@ func (h *ConsultationHandler) RegisterRoutes(api *gin.RouterGroup) {
 		)
 		consultations.POST(
 			"/:id/messages",
-			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger), 
+			middleware.RequireRoles([]string{"psikolog", "atlit"}, h.logger),
 			h.SendMessage,
 		)
 		consultations.GET(
 			"/:id/messages",
-			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger),  
+			middleware.RequireRoles([]string{"psikolog", "atlit"}, h.logger),
 			h.GetMessages,
 		)
 		consultations.POST("/:id/read", h.MarkMessageRead)
 		consultations.PATCH(
 			"/:id/close",
-			middleware.RequireRoles([]string{"psikolog","atlit"}, h.logger),  
+			middleware.RequireRoles([]string{"psikolog", "atlit"}, h.logger),
 			h.CloseConsultation,
 		)
 	}
-}
-
-// helper to get user ID from context, assuming it's stored by JWT middleware
-func getUserID(c *gin.Context) (uint, bool) {
-	principal, ok := security.PrincipalFromContext(c.Request.Context())
-	if ok {
-		return principal.UserID, true
-	}
-	
-	userIDStr, exists := c.Get("user_id") // fallback
-	if !exists {
-		return 0, false
-	}
-
-	switch v := userIDStr.(type) {
-	case string:
-		id, _ := strconv.ParseUint(v, 10, 32)
-		return uint(id), true
-	case float64:
-		return uint(v), true
-	case uint:
-		return v, true
-	case int:
-		return uint(v), true
-	}
-	return 0, false
 }
 
 // CreateConsultation godoc
@@ -118,7 +94,11 @@ func getUserID(c *gin.Context) (uint, bool) {
 func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -126,18 +106,25 @@ func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
 
 	var req dto.CreateConsultationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	res, err := h.usecase.CreateConsultation(c.Request.Context(), userID, &req)
 	if err != nil {
-		h.logger.Error("failed to create consultation", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, res)
+	c.JSON(http.StatusCreated, response.Success(res))
 }
 
 // GetConsultations godoc
@@ -153,7 +140,11 @@ func (h *ConsultationHandler) CreateConsultation(c *gin.Context) {
 func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -179,7 +170,11 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 	res, totalCount, err := h.usecase.GetConsultations(c.Request.Context(), principal.UserID, limit, page, status, search)
 	if err != nil {
 		h.logger.Error("failed to get consultations", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -192,14 +187,23 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 		totalPages = int((totalCount + int64(limit) - 1) / int64(limit))
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"data": res,
-		"meta": gin.H{
-			"total_data":   totalCount,
-			"total_pages":  totalPages,
-			"current_page": page,
-		},
-	})
+	c.JSON(http.StatusOK, response.SuccessWithMeta(res, response.Pagination{
+		Page:       page,
+		PerPage:    limit,
+		TotalItems: totalCount,
+		TotalPages: totalPages,
+		HasNext:    page < totalPages,
+		HasPrev:    page > 1,
+	}))
+
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"data": res,
+	// 	"meta": gin.H{
+	// 		"total_data":   totalCount,
+	// 		"total_pages":  totalPages,
+	// 		"current_page": page,
+	// 	},
+	// })
 }
 
 // GetConsultationByID godoc
@@ -217,7 +221,11 @@ func (h *ConsultationHandler) GetConsultations(c *gin.Context) {
 func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -226,18 +234,26 @@ func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id format"})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	res, err := h.usecase.GetConsultationByID(c.Request.Context(), id, userID)
 	if err != nil {
 		h.logger.Error("failed to get consultation", zap.Error(err))
-		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, response.Success(res))
 }
 
 // SendMessage godoc
@@ -256,7 +272,11 @@ func (h *ConsultationHandler) GetConsultationByID(c *gin.Context) {
 func (h *ConsultationHandler) SendMessage(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -265,24 +285,36 @@ func (h *ConsultationHandler) SendMessage(c *gin.Context) {
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id format"})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	var req dto.SendMessageRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	res, err := h.usecase.SendMessage(c.Request.Context(), conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to send message", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(http.StatusCreated, res)
+	c.JSON(http.StatusCreated, response.Success(res))
 }
 
 // GetMessages godoc
@@ -302,7 +334,11 @@ func (h *ConsultationHandler) SendMessage(c *gin.Context) {
 func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -311,7 +347,11 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id format"})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -320,7 +360,11 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 	if cursorParam != "" {
 		cursor, err = uuid.Parse(cursorParam)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid cursor format"})
+			status, resp := apperror.ToHTTP(err)
+			c.JSON(status, response.Response{
+				Success: false,
+				Error:   resp,
+			})
 			return
 		}
 	}
@@ -336,7 +380,11 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 	res, err := h.usecase.GetMessages(c.Request.Context(), conversationID, userID, cursor, limit)
 	if err != nil {
 		h.logger.Error("failed to get messages", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -344,7 +392,7 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 		res = []dto.MessageResponse{}
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, response.Success(res))
 }
 
 // MarkMessageRead godoc
@@ -363,7 +411,11 @@ func (h *ConsultationHandler) GetMessages(c *gin.Context) {
 func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -372,24 +424,36 @@ func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id format"})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	var req dto.MarkMessageReadRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	res, err := h.usecase.MarkMessageRead(c.Request.Context(), conversationID, userID, &req)
 	if err != nil {
 		h.logger.Error("failed to mark message as read", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, response.Success(res))
 }
 
 // CloseConsultation godoc
@@ -408,7 +472,11 @@ func (h *ConsultationHandler) MarkMessageRead(c *gin.Context) {
 func (h *ConsultationHandler) CloseConsultation(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
@@ -417,39 +485,59 @@ func (h *ConsultationHandler) CloseConsultation(c *gin.Context) {
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id format"})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	res, err := h.usecase.CloseConsultation(c.Request.Context(), conversationID, userID)
 	if err != nil {
 		h.logger.Error("failed to close consultation", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, response.Success(res))
 }
 
 func (h *ConsultationHandler) ApproveConsultation(c *gin.Context) {
 	principal, ok := security.PrincipalFromContext(c.Request.Context())
 	if !ok {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
+		status, resp := apperror.ToHTTP(apperror.Forbidden("unauthorized"))
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
-	}	
+	}
 
 	idParam := c.Param("id")
 	conversationID, err := uuid.Parse(idParam)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid conversation id format"})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	err = h.usecase.ApproveConsultation(c.Request.Context(), conversationID, principal.UserID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.Status(http.StatusAccepted)
+	c.JSON(http.StatusOK, response.Success(nil))
 }

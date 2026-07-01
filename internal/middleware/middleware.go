@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
 	"github.com/novriyantoAli/moodly/internal/security"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"github.com/novriyantoAli/moodly/internal/shared/response"
 	"go.uber.org/zap"
 )
 
@@ -79,7 +81,11 @@ func JWTMiddleware(jwtManager *jwt.JWTManager) gin.HandlerFunc {
 		authHeader := c.GetHeader("Authorization")
 
 		if authHeader == "" {
-			c.AbortWithStatusJSON(401, gin.H{"error": "missing token"})
+			status, resp := apperror.ToHTTP(apperror.Unauthorized("token is required"))
+			c.AbortWithStatusJSON(status, response.Response{
+				Success: false,
+				Error:   resp,
+			})
 			return
 		}
 
@@ -87,13 +93,17 @@ func JWTMiddleware(jwtManager *jwt.JWTManager) gin.HandlerFunc {
 
 		claims, err := jwtManager.ValidateToken(tokenStr)
 		if err != nil {
-			c.AbortWithStatusJSON(401, gin.H{"error": "invalid token"})
+			status, resp := apperror.ToHTTP(err)
+			c.AbortWithStatusJSON(status, response.Response{
+				Success: false,
+				Error:   resp,
+			})
 			return
 		}
 
 		principal := security.Principal{
-			UserID: claims.UserID,
-			Roles: claims.Roles,
+			UserID:      claims.UserID,
+			Roles:       claims.Roles,
 			Permissions: claims.Permissions,
 		}
 

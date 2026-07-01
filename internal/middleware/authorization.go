@@ -2,12 +2,13 @@ package middleware
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/novriyantoAli/moodly/internal/application/authorization/service"
-	"go.uber.org/zap"
 	"github.com/novriyantoAli/moodly/internal/security"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"github.com/novriyantoAli/moodly/internal/shared/response"
+	"go.uber.org/zap"
 )
 
 // RequirePermission checks if the authenticated user has the required permission
@@ -39,22 +40,31 @@ func RequirePermission(authService service.AuthorizationService, requiredPermiss
 		p, ok := security.PrincipalFromContext(c.Request.Context())
 		if !ok {
 			logger.Error("Failed to cast principal from context")
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "Internal Server Error",
-				"message": "Error processing authentication context",
+
+			status, resp := apperror.ToHTTP(apperror.BadRequest("Authentication required"))
+
+			c.JSON(status, response.Response{
+				Success: false,
+				Error:   resp,
 			})
+
 			c.Abort()
+
 			return
 		}
 
 		permissions, err := authService.GetPermissionsByRoles(c.Request.Context(), p.Roles)
 		if err != nil {
 			logger.Error("Failed to fetch permissions", zap.Error(err), zap.Strings("user_roles", p.Roles))
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "Internal Server Error",
-				"message": "Error verifying permissions",
+
+			status, resp := apperror.ToHTTP(apperror.Internal(err))
+			c.JSON(status, response.Response{
+				Success: false,
+				Error:   resp,
 			})
+
 			c.Abort()
+
 			return
 		}
 
@@ -71,10 +81,13 @@ func RequirePermission(authService service.AuthorizationService, requiredPermiss
 			logger.Warn(
 				fmt.Sprintf("Forbidden access attempt: user %d lacks permission %s", p.UserID, requiredPermission),
 			)
-			c.JSON(http.StatusForbidden, gin.H{
-				"error":   "Forbidden",
-				"message": "You don't have sufficient permissions to access this resource",
+
+			status, resp := apperror.ToHTTP(apperror.Forbidden("You don't have sufficient permissions to access this resource"))
+			c.JSON(status, response.Response{
+				Success: false,
+				Error:   resp,
 			})
+
 			c.Abort()
 			return
 		}
@@ -85,7 +98,6 @@ func RequirePermission(authService service.AuthorizationService, requiredPermiss
 			Roles:       p.Roles,
 			Permissions: permissions,
 		})
-
 
 		// if !security.HasPermission(c.Request.Context(), requiredPermission) {
 		// 	logger.Warn(
@@ -219,10 +231,13 @@ func RequireRoles(requiredRoles []string, logger *zap.Logger) gin.HandlerFunc {
 			logger.Warn(
 				fmt.Sprintf("Forbidden access attempt:  lacks role %v", requiredRoles),
 			)
-			c.JSON(http.StatusForbidden, gin.H{
-				"error":   "Forbidden",
-				"message": "You don't have sufficient roles to access this resource",
+
+			status, resp := apperror.ToHTTP(apperror.Forbidden("You don't have sufficient roles to access this resource"))
+			c.JSON(status, response.Response{
+				Success: false,
+				Error:   resp,
 			})
+
 			c.Abort()
 			return
 		}

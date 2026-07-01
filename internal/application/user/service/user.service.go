@@ -8,6 +8,7 @@ import (
 	"github.com/novriyantoAli/moodly/internal/application/user/dto"
 	"github.com/novriyantoAli/moodly/internal/application/user/entity"
 	"github.com/novriyantoAli/moodly/internal/application/user/repository"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
 
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -42,13 +43,13 @@ func (s *userService) ValidateUser(ctx context.Context, id uint) (*dto.UserRespo
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperror.NotFound("user not found")
 		}
 		return nil, err
 	}
 
 	if !user.IsActive {
-		return nil, errors.New("user account is inactive")
+		return nil, apperror.Forbidden("user account is inactive")
 	}
 
 	return s.entityToResponse(user), nil
@@ -61,14 +62,14 @@ func (s *userService) CreateUser(ctx context.Context, req *dto.CreateUserRequest
 		return nil, err
 	}
 	if exists {
-		return nil, errors.New("email already exists")
+		return nil, apperror.Conflict("email already exists")
 	}
 
 	// Hash password using bcrypt
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		s.logger.Error("Failed to hash password", zap.Error(err))
-		return nil, errors.New("failed to process password")
+		return nil, err
 	}
 
 	user := &entity.User{
@@ -94,7 +95,7 @@ func (s *userService) GetUserByID(ctx context.Context, id uint) (*dto.UserRespon
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperror.NotFound("user not found")
 		}
 		return nil, err
 	}
@@ -106,7 +107,7 @@ func (s *userService) GetUserByEmail(ctx context.Context, email string) (*dto.Us
 	user, err := s.repo.GetByEmail(ctx, email)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperror.NotFound("user not found")
 		}
 		return nil, err
 	}
@@ -171,7 +172,7 @@ func (s *userService) UpdateUser(ctx context.Context, id uint, req *dto.UpdateUs
 	user, err := s.repo.GetByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, errors.New("user not found")
+			return nil, apperror.NotFound("user not found")
 		}
 		return nil, err
 	}
@@ -223,7 +224,7 @@ func (s *userService) Login(ctx context.Context, req *dto.LoginUserRequest) (*dt
 	}
 
 	if !user.IsActive {
-		return nil, errors.New("user account is inactive")
+		return nil, apperror.Forbidden("user account is inactive")
 	}
 
 	return &dto.LoginUserResponse{

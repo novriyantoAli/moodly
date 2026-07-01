@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/novriyantoAli/moodly/internal/application/auth/dto"
 	"github.com/novriyantoAli/moodly/internal/application/auth/usecase"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"github.com/novriyantoAli/moodly/internal/shared/response"
 	"go.uber.org/zap"
 )
 
@@ -29,18 +31,12 @@ func (h *LoginHandler) Login(c *gin.Context) {
 
 	var req dto.LoginRequest
 
-	if err := c.ShouldBindJSON(
-		&req,
-	); err != nil {
-
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{
-				"success": false,
-				"message": "invalid request",
-				"error":   err.Error(),
-			},
-		)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 
 		return
 	}
@@ -49,13 +45,8 @@ func (h *LoginHandler) Login(c *gin.Context) {
 
 	req.UserAgent = c.Request.UserAgent()
 
-	resp, err := h.loginUseCase.Execute(
-		c.Request.Context(),
-		&req,
-	)
-
+	resp, err := h.loginUseCase.Execute(c.Request.Context(), &req)
 	if err != nil {
-
 		h.logger.Error(
 			"login failed",
 			zap.Error(err),
@@ -65,25 +56,15 @@ func (h *LoginHandler) Login(c *gin.Context) {
 			),
 		)
 
-		c.JSON(
-			http.StatusUnauthorized,
-			gin.H{
-				"success": false,
-				"message": err.Error(),
-			},
-		)
-
+		status, resp := apperror.ToHTTP(err)
+		c.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	c.JSON(
-		http.StatusOK,
-		gin.H{
-			"success": true,
-			"message": "login success",
-			"data":    resp,
-		},
-	)
+	c.JSON(http.StatusOK, response.Success(resp))
 }
 
 func (h *LoginHandler) RegisterRoutes(api *gin.RouterGroup) {

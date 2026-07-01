@@ -8,6 +8,8 @@ import (
 	"github.com/novriyantoAli/moodly/internal/application/user/service"
 	"github.com/novriyantoAli/moodly/internal/middleware"
 	"github.com/novriyantoAli/moodly/internal/pkg/jwt"
+	"github.com/novriyantoAli/moodly/internal/shared/apperror"
+	"github.com/novriyantoAli/moodly/internal/shared/response"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -164,26 +166,47 @@ func (h *UserHandler) GetUsers(ctx *gin.Context) {
 // @Param email query string false "Filter by email"
 // @Param page query int false "Page number" default(1)
 // @Param page_size query int false "Number of items per page" default(10)
-// @Success 200 {object} dto.UserListResponse "List of psikolog users"
+// @Success 200 {object} response.Response "List of psikolog users"
 // @Failure 400 {object} map[string]interface{} "Invalid query parameters"
 // @Failure 500 {object} map[string]interface{} "Internal server error"
 // @Router /users/psikolog [get]
 func (h *UserHandler) GetPsikologList(ctx *gin.Context) {
 	var filter dto.UserFilter
 	if err := ctx.ShouldBindQuery(&filter); err != nil {
-		h.logger.Error("Invalid query parameters", zap.Error(err))
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		status, resp := apperror.ToHTTP(err)
+		ctx.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
 	users, err := h.service.GetPsikologUsers(ctx.Request.Context(), &filter)
 	if err != nil {
+		status, resp := apperror.ToHTTP(err)
 		h.logger.Error("Failed to get psikolog users", zap.Error(err))
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get psikolog users"})
+		ctx.JSON(status, response.Response{
+			Success: false,
+			Error:   resp,
+		})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, users)
+	totalPages := int((users.TotalCount + int64(users.PageSize) - 1) / int64(users.PageSize))
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	meta := response.Pagination{
+		Page:       users.Page,
+		PerPage:    users.PageSize,
+		TotalItems: users.TotalCount,
+		TotalPages: totalPages,
+		HasNext:    users.Page < totalPages,
+		HasPrev:    users.Page > 1,
+	}
+
+	ctx.JSON(http.StatusOK, response.SuccessWithMeta(users.Data, meta))
 }
 
 // UpdateUser godoc
